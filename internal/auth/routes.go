@@ -1,7 +1,7 @@
 package auth
 
 import (
-	redis "mvc/internal/reids"
+	redis "mvc/internal/redis"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/rs/zerolog"

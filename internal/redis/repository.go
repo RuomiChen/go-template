@@ -20,7 +20,7 @@ func NewRepository(client *Client) Repository {
 }
 
 func (r *repository) SetToken(ctx context.Context, token string, userID string, expiration time.Duration) error {
-	return r.client.Set(ctx, userID, token, expiration)
+	return r.client.Set(ctx, token, userID, expiration)
 }
 
 func (r *repository) GetToken(ctx context.Context, token string) (string, error) {

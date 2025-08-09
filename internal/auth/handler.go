@@ -1,7 +1,7 @@
 package auth
 
 import (
-	redis "mvc/internal/reids"
+	redis "mvc/internal/redis"
 	"time"
 
 	"github.com/gofiber/fiber/v2"
@@ -30,8 +30,7 @@ func (h *Handler) Login(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "invalid credentials"})
 	}
 
-	_ = h.redisService.SaveToken(c.Context(), token, "123", time.Hour*24)
-	a, _ := h.redisService.ValidateToken(c.Context(), token)
-	h.logger.Info().Interface("storage_token", a).Msg("123")
+	_ = h.redisService.SaveToken(c.Context(), token, "123", time.Second*10)
+
 	return c.JSON(fiber.Map{"token": token})
 }

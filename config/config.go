@@ -1,6 +1,7 @@
 package config
 
 import (
+	"log"
 	"os"
 
 	"github.com/rs/zerolog"
@@ -52,22 +53,12 @@ func LoadConfig() *Config {
 	if err := v.ReadInConfig(); err != nil {
 		logger := zerolog.New(os.Stderr).With().Timestamp().Logger()
 		logger.Fatal().Err(err).Msg("读取配置文件失败")
-	}
 
+	}
 	var cfg Config
 	if err := v.Unmarshal(&cfg); err != nil {
-		logger := zerolog.New(os.Stderr).With().Timestamp().Logger()
-		logger.Fatal().Err(err).Msg("解析配置文件失败")
+		log.Fatalf("解析配置文件失败: %v", err)
 	}
-
-	// 初始化全局日志（按需设置格式）
-	logger := zerolog.New(os.Stdout).
-		With().
-		Timestamp().
-		Caller().
-		Logger()
-
-	cfg.Logger = logger
 
 	return &cfg
 }

@@ -28,8 +28,9 @@ func main() {
 	redisService := redis.NewService(redisRepo, log)
 
 	if !redisClient.IsConnected(context.Background()) {
-		cfg.Logger.Fatal().Msg("Redis connection failed")
+		log.Fatal().Msg("Redis connection failed")
 	}
+	log.Info().Msg("Redis初始化成功")
 
 	dsn := fmt.Sprintf("%s:%s@tcp(%s:%d)/%s?parseTime=true",
 		cfg.Database.User, cfg.Database.Password,

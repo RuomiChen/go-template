@@ -15,3 +15,6 @@ redis:
   addr: "127.0.0.1:6379"
   password: ""
   db: 0
+
+logger:
+  base: 日志存储位置(相对)

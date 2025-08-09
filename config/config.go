@@ -13,10 +13,14 @@ type Config struct {
 	Server   ServerConfig
 	JWT      JWTConfig
 	Redis    RedisConfig
-	Logger   zerolog.Logger // 直接在配置中暴露日志实例
+	Logger   LoggerConfig
 }
 type JWTConfig struct {
 	Secret string
+}
+type LoggerConfig struct {
+	LoggerIns zerolog.Logger // 直接在配置中暴露日志实例
+	Base      string
 }
 type DatabaseConfig struct {
 	User     string
@@ -49,6 +53,7 @@ func LoadConfig() *Config {
 	v.SetDefault("redis.addr", "localhost:6379")
 	v.SetDefault("redis.password", "")
 	v.SetDefault("redis.db", 0)
+	v.SetDefault("logger.base", "logs/app.log")
 	// 读取配置文件
 	if err := v.ReadInConfig(); err != nil {
 		logger := zerolog.New(os.Stderr).With().Timestamp().Logger()

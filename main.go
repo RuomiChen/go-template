@@ -18,8 +18,10 @@ func main() {
 
 	cfg := config.LoadConfig()
 
-	log := logger.NewLogger()
-
+	log, err := logger.NewLogger(cfg.Logger.Base)
+	if err != nil {
+		panic(err)
+	}
 	log.Info().Msg("日志初始化成功")
 
 	// 初始化 Redis
@@ -40,7 +42,7 @@ func main() {
 
 	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
 	if err != nil {
-		cfg.Logger.Fatal().Err(err).Msg("数据库连接失败")
+		log.Fatal().Err(err).Msg("数据库连接失败")
 	}
 	//使用上下文的方式 避免 参数地狱
 	/**

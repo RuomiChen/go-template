@@ -8,6 +8,7 @@ import (
 	"mvc/internal/user"
 
 	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/websocket/v2"
 )
 
 func Register(app *fiber.App, appCtx *appcontext.AppContext) {
@@ -26,4 +27,20 @@ func Register(app *fiber.App, appCtx *appcontext.AppContext) {
 
 	authGroup := v1.Group("/auth")
 	auth.RegisterRoutes(authGroup, appCtx.DB, appCtx.Logger, appCtx.RedisService, appCtx.JWTSecret)
+
+	api.Get("/ws", websocket.New(func(c *websocket.Conn) {
+		for {
+			mt, msg, err := c.ReadMessage()
+			if err != nil {
+				break
+			}
+
+			appCtx.Logger.Info().Msgf("WebSocket recv: %s", string(msg))
+
+			// 简单回显
+			if err := c.WriteMessage(mt, msg); err != nil {
+				break
+			}
+		}
+	}))
 }

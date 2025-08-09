@@ -55,6 +55,9 @@ func main() {
 	app := fiber.New()
 	routes.Register(app, appCtx)
 
+	// 直接在这里写 websocket 路由
+
 	log.Info().Int("port", cfg.Server.Port).Msg("服务器启动中...")
+
 	app.Listen(fmt.Sprintf(":%d", cfg.Server.Port))
 }

@@ -1,8 +1,10 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"mvc/config"
+	redis "mvc/internal/reids"
 	"mvc/routes"
 
 	"github.com/gofiber/fiber/v2"
@@ -13,6 +15,14 @@ import (
 func main() {
 
 	cfg := config.LoadConfig()
+
+	// 初始化 Redis
+	redisClient := redis.NewRedisClient(cfg.Redis.Addr, cfg.Redis.Password, cfg.Redis.DB)
+	redisRepo := redis.NewRepository(redisClient)
+	redisService := redis.NewService(redisRepo)
+	if !redisClient.IsConnected(context.Background()) {
+		cfg.Logger.Fatal().Msg("Redis connection failed")
+	}
 
 	dsn := fmt.Sprintf("%s:%s@tcp(%s:%d)/%s?parseTime=true",
 		cfg.Database.User, cfg.Database.Password,
@@ -26,7 +36,7 @@ func main() {
 	}
 
 	app := fiber.New()
-	routes.Register(app, db, cfg.Logger, cfg.JWT.Secret)
+	routes.Register(app, db, cfg.Logger, redisService, cfg.JWT.Secret)
 
 	cfg.Logger.Info().Int("port", cfg.Server.Port).Msg("服务器启动中...")
 	app.Listen(fmt.Sprintf(":%d", cfg.Server.Port))

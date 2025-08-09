@@ -4,6 +4,7 @@ import (
 	"mvc/internal/auth"
 	"mvc/internal/middleware"
 	"mvc/internal/news"
+	redis "mvc/internal/reids"
 	"mvc/internal/user"
 
 	"github.com/gofiber/fiber/v2"
@@ -11,7 +12,7 @@ import (
 	"gorm.io/gorm"
 )
 
-func Register(app *fiber.App, db *gorm.DB, logger zerolog.Logger, jwtSecret string) {
+func Register(app *fiber.App, db *gorm.DB, logger zerolog.Logger, redisService redis.Service, jwtSecret string) {
 	api := app.Group("/api")
 
 	// v1 API
@@ -26,5 +27,5 @@ func Register(app *fiber.App, db *gorm.DB, logger zerolog.Logger, jwtSecret stri
 	news.RegisterRoutes(newsGroup, db, logger)
 
 	authGroup := v1.Group("/auth")
-	auth.RegisterRoutes(authGroup, db, logger, jwtSecret)
+	auth.RegisterRoutes(authGroup, db, logger, redisService, jwtSecret)
 }

@@ -1,17 +1,21 @@
 package auth
 
 import (
+	redis "mvc/internal/reids"
+	"time"
+
 	"github.com/gofiber/fiber/v2"
 	"github.com/rs/zerolog"
 )
 
 type Handler struct {
-	service *Service
-	logger  zerolog.Logger
+	service      *Service
+	logger       zerolog.Logger
+	redisService redis.Service
 }
 
-func NewHandler(service *Service, logger zerolog.Logger) *Handler {
-	return &Handler{service: service, logger: logger}
+func NewHandler(service *Service, logger zerolog.Logger, redisService redis.Service) *Handler {
+	return &Handler{service: service, logger: logger, redisService: redisService}
 }
 
 func (h *Handler) Login(c *fiber.Ctx) error {
@@ -26,5 +30,8 @@ func (h *Handler) Login(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "invalid credentials"})
 	}
 
+	_ = h.redisService.SaveToken(c.Context(), token, "123", time.Hour*24)
+	a, _ := h.redisService.ValidateToken(c.Context(), token)
+	h.logger.Info().Interface("storage_token", a).Msg("123")
 	return c.JSON(fiber.Map{"token": token})
 }

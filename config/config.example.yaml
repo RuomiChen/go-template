@@ -1,0 +1,17 @@
+database:
+  user: your_db_user
+  password: your_db_password
+  host: 127.0.0.1
+  port: 3306
+  name: your_db_name
+
+server:
+  port: 3000
+
+jwt:
+  secret: your_jwt_secret
+
+redis:
+  addr: "127.0.0.1:6379"
+  password: ""
+  db: 0

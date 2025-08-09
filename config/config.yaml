@@ -1,0 +1,12 @@
+database:
+  user: root
+  password: 123456
+  host: 127.0.0.1
+  port: 3306
+  name: news
+
+server:
+  port: 3000
+
+jwt:
+  secret: rmcuysd

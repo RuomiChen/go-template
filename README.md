@@ -14,6 +14,6 @@
 ## 项目结构
 
 
-go mod init xxx
-go mod tidy
-air
+- go mod init xxx
+- go mod tidy
+- air

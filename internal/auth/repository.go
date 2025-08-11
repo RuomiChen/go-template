@@ -1,6 +1,8 @@
 package auth
 
-import "gorm.io/gorm"
+import (
+	"gorm.io/gorm"
+)
 
 type User struct {
 	ID       uint   `gorm:"primaryKey"`
@@ -18,8 +20,13 @@ func NewRepository(db *gorm.DB) *Repository {
 
 func (r *Repository) FindByUsername(username string) (*User, error) {
 	var user User
-	if err := r.db.Where("name = ?", username).First(&user).Error; err != nil {
+	if err := r.db.Where("username = ?", username).First(&user).Error; err != nil {
 		return nil, err
 	}
 	return &user, nil
+}
+
+// Create 注册用户，传入的是 user.User 类型指针
+func (r *Repository) Create(u *User) error {
+	return r.db.Create(u).Error
 }

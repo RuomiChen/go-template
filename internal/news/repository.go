@@ -21,6 +21,6 @@ func (r *repository) GetAll() ([]News, error) {
 	return newsList, err
 }
 
-func (r *repository) Create(user *News) error {
-	return r.db.Create(user).Error
+func (r *repository) Create(news *News) error {
+	return r.db.Create(news).Error
 }

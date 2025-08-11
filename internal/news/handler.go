@@ -24,7 +24,7 @@ func (h *Handler) GetNewsList(c *fiber.Ctx) error {
 	return c.JSON(news)
 }
 
-func (h *Handler) CreateUser(c *fiber.Ctx) error {
+func (h *Handler) CreateNews(c *fiber.Ctx) error {
 	var news News
 	if err := c.BodyParser(&news); err != nil {
 		return c.Status(400).JSON(fiber.Map{"error": "解析失败"})

@@ -40,3 +40,4 @@ Thumbs.db
 # =====
 /config/config.yaml
 
+cmd/crudgen/main.go

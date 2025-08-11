@@ -2,7 +2,11 @@ package news
 
 type Service interface {
 	GetNewsList(page, pageSize int) ([]News, int64, error)
+	GetNewsDetail(id string) (*News, error)
 	AddNews(news *News) error
+	DeleteNews(id string) error
+	UpdateNews(id string, news *News) (*News, error)
+	PartialUpdateNews(id string, updates map[string]interface{}) (*News, error)
 }
 
 type service struct {
@@ -22,13 +26,31 @@ func (s *service) GetNewsList(page, pageSize int) ([]News, int64, error) {
 	}
 	return s.repo.GetPaged(page, pageSize)
 }
-
+func (s *service) GetNewsDetail(id string) (*News, error) {
+	return s.repo.GetByID(id)
+}
 func (s *service) AddNews(news *News) error {
 	return s.repo.Create(news)
 }
-func (s *service) DeleteNews(id uint) error {
+func (s *service) DeleteNews(id string) error {
 	return s.repo.Delete(id)
 }
-func (s *service) UpdateNews(news *News) error {
-	return s.repo.Update(news)
+func (s *service) UpdateNews(id string, news *News) (*News, error) {
+	existing, err := s.repo.GetByID(id)
+	if err != nil {
+		return nil, err
+	}
+
+	news.ID = existing.ID
+	if err := s.repo.Update(news); err != nil {
+		return nil, err
+	}
+	return news, nil
+}
+
+func (s *service) PartialUpdateNews(id string, updates map[string]interface{}) (*News, error) {
+	if err := s.repo.PartialUpdate(id, updates); err != nil {
+		return nil, err
+	}
+	return s.repo.GetByID(id)
 }

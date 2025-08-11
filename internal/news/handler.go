@@ -1,10 +1,12 @@
 package news
 
 import (
+	"errors"
 	"mvc/pkg/response"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/rs/zerolog"
+	"gorm.io/gorm"
 )
 
 type Handler struct {
@@ -42,7 +44,28 @@ func (h *Handler) GetNewsList(c *fiber.Ctx) error {
 		"pageSize": pageSize,
 	})
 }
+func (h *Handler) GetNewsDetail(c *fiber.Ctx) error {
+	id := c.Params("id")
+	if id == "" {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error": "missing news id",
+		})
+	}
 
+	news, err := h.service.GetNewsDetail(id)
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
+				"error": "news not found",
+			})
+		}
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": "failed to get news detail",
+		})
+	}
+
+	return c.JSON(news)
+}
 func (h *Handler) CreateNews(c *fiber.Ctx) error {
 	var news News
 	if err := c.BodyParser(&news); err != nil {
@@ -52,5 +75,64 @@ func (h *Handler) CreateNews(c *fiber.Ctx) error {
 		return c.Status(500).JSON(fiber.Map{"error": err.Error()})
 	}
 	h.logger.Info().Interface("add news", news).Msg("添加一条新新闻成功！")
+	return response.Success(c, nil)
+}
+func (h *Handler) UpdateNews(c *fiber.Ctx) error {
+	id := c.Params("id")
+	if id == "" {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "missing news id"})
+	}
+
+	var req News
+	if err := c.BodyParser(&req); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "invalid request body"})
+	}
+
+	updated, err := h.service.UpdateNews(id, &req)
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": "news not found"})
+		}
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
+	}
+
+	return c.JSON(updated)
+}
+func (h *Handler) PartialUpdateNews(c *fiber.Ctx) error {
+	id := c.Params("id")
+	if id == "" {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "missing news id"})
+	}
+
+	var updates map[string]interface{}
+	if err := c.BodyParser(&updates); err != nil {
+		return response.Error(c, fiber.StatusBadRequest, "invalid request body")
+	}
+
+	updated, err := h.service.PartialUpdateNews(id, updates)
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return response.Error(c, fiber.StatusNotFound, "news not found")
+		}
+		return response.Error(c, fiber.StatusInternalServerError, err.Error())
+	}
+	h.logger.Info().Interface("updated", updated).Msg("update success!")
+	return response.Success(c, updated)
+}
+func (h *Handler) DeleteNews(c *fiber.Ctx) error {
+	// 1. 从 URL 参数读取 ID
+	id := c.Params("id")
+	if id == "" {
+		return response.Error(c, 400, "缺少 ID")
+	}
+
+	// 2. 调用 service 删除
+	if err := h.service.DeleteNews(id); err != nil {
+		h.logger.Error().Err(err).Str("id", id).Msg("删除新闻失败")
+		return response.Error(c, 500, err.Error())
+	}
+
+	// 3. 成功返回
+	h.logger.Info().Str("id", id).Msg("删除新闻成功")
 	return response.Success(c, nil)
 }

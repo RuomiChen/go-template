@@ -8,10 +8,11 @@ import (
 
 type Repository interface {
 	GetAll() ([]News, error)
-	GetByID(id uint) (*News, error)
+	GetByID(id string) (*News, error)
 	Create(news *News) error
 	Update(news *News) error
-	Delete(id uint) error
+	PartialUpdate(id string, updates map[string]interface{}) error
+	Delete(id string) error
 	GetPaged(page, pageSize int) ([]News, int64, error)
 }
 
@@ -29,7 +30,7 @@ func (r *repository) GetAll() ([]News, error) {
 	return newsList, err
 }
 
-func (r *repository) GetByID(id uint) (*News, error) {
+func (r *repository) GetByID(id string) (*News, error) {
 	var news News
 	err := r.db.First(&news, id).Error
 	if err != nil {
@@ -43,10 +44,14 @@ func (r *repository) Create(news *News) error {
 }
 
 func (r *repository) Update(news *News) error {
-	return r.db.Save(news).Error
+	return r.db.Omit("created_at").Save(news).Error
 }
 
-func (r *repository) Delete(id uint) error {
+func (r *repository) PartialUpdate(id string, updates map[string]interface{}) error {
+	return r.db.Model(&News{}).Where("id = ?", id).Updates(updates).Error
+}
+
+func (r *repository) Delete(id string) error {
 	return r.db.Delete(&News{}, id).Error
 }
 func (r *repository) GetPaged(page, pageSize int) ([]News, int64, error) {

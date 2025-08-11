@@ -6,7 +6,7 @@ import (
 	"mvc/appcontext"
 	"mvc/config"
 	"mvc/internal/redis"
-	"mvc/pkg/utils/logger"
+	"mvc/pkg/utils"
 	"mvc/routes"
 
 	"github.com/gofiber/fiber/v2"
@@ -16,7 +16,7 @@ func main() {
 
 	cfg := config.LoadConfig()
 
-	log := logger.NewLogger(cfg.Logger.Base)
+	log := utils.NewLogger(cfg.Logger.Base)
 
 	// 初始化 Redis
 	redisClient := redis.NewRedisClient(cfg.Redis.Addr, cfg.Redis.Password, cfg.Redis.DB)

@@ -1,6 +1,8 @@
 package news
 
 import (
+	"mvc/pkg/response"
+
 	"github.com/gofiber/fiber/v2"
 	"github.com/rs/zerolog"
 )
@@ -19,7 +21,7 @@ func (h *Handler) GetNewsList(c *fiber.Ctx) error {
 	if err != nil {
 		return c.Status(500).JSON(fiber.Map{"error": err.Error()})
 	}
-	h.logger.Info().Interface("news", news).Msg("get news success")
+	h.logger.Info().Int("len", len(news)).Msg("get news success")
 
 	return c.JSON(news)
 }
@@ -32,5 +34,6 @@ func (h *Handler) CreateNews(c *fiber.Ctx) error {
 	if err := h.service.AddNews(&news); err != nil {
 		return c.Status(500).JSON(fiber.Map{"error": err.Error()})
 	}
-	return c.Status(201).JSON(news)
+	h.logger.Info().Interface("add news", news).Msg("添加一条新新闻成功！")
+	return response.Success(c, nil)
 }

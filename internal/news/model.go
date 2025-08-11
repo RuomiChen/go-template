@@ -5,5 +5,5 @@ import "mvc/internal/common"
 type News struct {
 	common.BaseModel
 
-	Content string
+	Content string `json:"content"`
 }

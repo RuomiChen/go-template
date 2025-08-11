@@ -45,6 +45,7 @@ func main() {
 	appCtx := appcontext.NewAppContext(db, log, redisService, cfg.JWT.Secret)
 
 	app := fiber.New()
+
 	routes.Register(app, appCtx)
 
 	// 直接在这里写 websocket 路由

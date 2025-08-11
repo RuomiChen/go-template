@@ -1,15 +1,19 @@
 package news
 
 import (
+	"mvc/internal/redis"
+
 	"github.com/gofiber/fiber/v2"
 	"github.com/rs/zerolog"
 	"gorm.io/gorm"
 )
 
-func RegisterRoutes(r fiber.Router, db *gorm.DB, logger zerolog.Logger) {
+func RegisterRoutes(r fiber.Router, db *gorm.DB, logger zerolog.Logger, redisService redis.Service) {
 	repo := NewRepository(db)
-	service := NewService(repo)
+	service := NewService(repo, redisService)
 	handler := NewHandler(service, logger)
+
+	r.Post("/upload", handler.UploadImage) //上传接口
 
 	r.Get("/", handler.GetNewsList)
 	r.Get("/:id", handler.GetNewsDetail) // 获取新闻详情

@@ -12,6 +12,9 @@ import (
 )
 
 func Register(app *fiber.App, appCtx *appcontext.AppContext) {
+
+	app.Static("/uploads", "./uploads")
+
 	api := app.Group("/api")
 
 	// v1 API
@@ -23,7 +26,7 @@ func Register(app *fiber.App, appCtx *appcontext.AppContext) {
 	// postGroup := v1.Group("/posts")
 	// post.RegisterRoutes(postGroup, db, logger)
 	newsGroup := v1.Group("/news")
-	news.RegisterRoutes(newsGroup, appCtx.DB, appCtx.Logger)
+	news.RegisterRoutes(newsGroup, appCtx.DB, appCtx.Logger, appCtx.RedisService)
 
 	authGroup := v1.Group("/auth")
 	auth.RegisterRoutes(authGroup, appCtx.DB, appCtx.Logger, appCtx.RedisService, appCtx.JWTSecret)

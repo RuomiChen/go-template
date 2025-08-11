@@ -1,5 +1,13 @@
 package news
 
+import (
+	"mvc/internal/redis"
+	"mvc/pkg/utils"
+	"time"
+
+	"github.com/gofiber/fiber/v2"
+)
+
 type Service interface {
 	GetNewsList(page, pageSize int) ([]News, int64, error)
 	GetNewsDetail(id string) (*News, error)
@@ -7,14 +15,17 @@ type Service interface {
 	DeleteNews(id string) error
 	UpdateNews(id string, news *News) (*News, error)
 	PartialUpdateNews(id string, updates map[string]interface{}) (*News, error)
+	UploadImage(c *fiber.Ctx) (string, error)
 }
 
 type service struct {
-	repo Repository
+	repo      Repository
+	hashStore *utils.RedisHashStore
 }
 
-func NewService(repo Repository) Service {
-	return &service{repo: repo}
+func NewService(repo Repository, redisService redis.Service) Service {
+	hashStore := utils.NewRedisHashStore(redisService, "imghash:", time.Hour*24*7)
+	return &service{repo: repo, hashStore: hashStore}
 }
 
 func (s *service) GetNewsList(page, pageSize int) ([]News, int64, error) {
@@ -53,4 +64,8 @@ func (s *service) PartialUpdateNews(id string, updates map[string]interface{}) (
 		return nil, err
 	}
 	return s.repo.GetByID(id)
+}
+func (s *service) UploadImage(c *fiber.Ctx) (string, error) {
+	allowExts := []string{".jpg", ".jpeg", ".png"}
+	return utils.UploadImageWithHashCheck(c, "image", "./uploads", allowExts, s.hashStore)
 }

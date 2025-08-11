@@ -3,6 +3,7 @@ package news
 import (
 	"errors"
 	"mvc/pkg/response"
+	"path/filepath"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/rs/zerolog"
@@ -135,4 +136,14 @@ func (h *Handler) DeleteNews(c *fiber.Ctx) error {
 	// 3. 成功返回
 	h.logger.Info().Str("id", id).Msg("删除新闻成功")
 	return response.Success(c, nil)
+}
+func (h *Handler) UploadImage(c *fiber.Ctx) error {
+	imagePath, err := h.service.UploadImage(c)
+	if err != nil {
+		return c.Status(400).JSON(fiber.Map{"error": err.Error()})
+	}
+
+	// 返回图片访问URL
+	url := "/uploads/" + filepath.Base(imagePath)
+	return c.JSON(fiber.Map{"url": url})
 }

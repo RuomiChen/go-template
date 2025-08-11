@@ -20,6 +20,6 @@ func Success(c *fiber.Ctx, data interface{}) error {
 	return JSON(c, fiber.StatusOK, CodeSuccess, "success", data)
 }
 
-func Error(c *fiber.Ctx, httpStatus, code int, message string) error {
-	return JSON(c, httpStatus, code, message, nil)
+func Error(c *fiber.Ctx, httpStatus int, message string) error {
+	return JSON(c, httpStatus, CodeInternalErr, message, nil)
 }

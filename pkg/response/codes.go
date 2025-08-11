@@ -17,6 +17,7 @@ const (
 	CodePasswordErr  = 2003
 
 	// 新闻公告
-	CodeNewsNotFound = 3001
-	CodeNewsExpired  = 3002
+	CodeNewsNotFound     = 3001
+	CodeNewsExpired      = 3002
+	CodeNewsUpdatedError = 3003
 )

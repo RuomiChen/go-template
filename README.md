@@ -17,3 +17,7 @@
 - go mod init xxx
 - go mod tidy
 - air
+
+## 目前需要做的：
+- 整合ES搜索引擎
+- 根据model 生产CRUD模板

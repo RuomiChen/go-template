@@ -9,8 +9,6 @@ import (
 	"mvc/routes"
 
 	"github.com/gofiber/fiber/v2"
-	"gorm.io/driver/mysql"
-	"gorm.io/gorm"
 )
 
 func main() {
@@ -35,10 +33,8 @@ func main() {
 		cfg.Database.Name,
 	)
 
-	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
-	if err != nil {
-		log.Fatal().Err(err).Msg("数据库连接失败")
-	}
+	db := appcontext.InitDB(dsn)
+
 	//使用上下文的方式 避免 参数地狱
 	/**
 	routes.Register(app, ctx) 这样传一个上下文对象，就不会有一堆参数。

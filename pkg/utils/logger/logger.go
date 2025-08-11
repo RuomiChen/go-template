@@ -8,16 +8,16 @@ import (
 )
 
 // NewLogger 创建一个 zerolog.Logger 实例，支持控制台友好格式
-func NewLogger(logFilePath string) (zerolog.Logger, error) {
+func NewLogger(logFilePath string) zerolog.Logger {
 
 	// 确保目录存在
 	if err := os.MkdirAll("logs", 0755); err != nil {
-		return zerolog.Logger{}, err
+		panic(err)
 	}
 
 	file, err := os.OpenFile(logFilePath, os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0644)
 	if err != nil {
-		return zerolog.Logger{}, err
+		panic(err)
 	}
 
 	consoleWriter := zerolog.ConsoleWriter{
@@ -30,6 +30,6 @@ func NewLogger(logFilePath string) (zerolog.Logger, error) {
 		Timestamp().
 		Caller().
 		Logger()
-
-	return logger, nil
+	logger.Info().Msg("日志初始化成功")
+	return logger
 }

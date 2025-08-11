@@ -17,11 +17,7 @@ func main() {
 
 	cfg := config.LoadConfig()
 
-	log, err := logger.NewLogger(cfg.Logger.Base)
-	if err != nil {
-		panic(err)
-	}
-	log.Info().Msg("日志初始化成功")
+	log := logger.NewLogger(cfg.Logger.Base)
 
 	// 初始化 Redis
 	redisClient := redis.NewRedisClient(cfg.Redis.Addr, cfg.Redis.Password, cfg.Redis.DB)

@@ -1,6 +1,9 @@
 package news
 
+import "mvc/internal/common"
+
 type News struct {
-	ID      uint `gorm:"primaryKey"`
+	common.BaseModel
+
 	Content string
 }

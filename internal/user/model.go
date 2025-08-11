@@ -1,7 +1,9 @@
 package user
 
+import "mvc/internal/common"
+
 type User struct {
-	ID    uint `gorm:"primaryKey"`
+	common.BaseModel
 	Name  string
 	Email string
 }

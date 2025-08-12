@@ -1,4 +1,4 @@
-package auth
+package admin
 
 import (
 	"errors"
@@ -21,22 +21,22 @@ func NewService(repo *Repository, jwtSecret string, redisService redis.Service) 
 }
 
 func (s *Service) Login(c *fiber.Ctx, username string, password string) (string, error) {
-	auth, err := s.repo.FindByUsername(username)
+	admin, err := s.repo.FindByUsername(username)
 	if err != nil {
 		return "", err
 	}
 
 	// 用 bcrypt 比对明文密码和数据库哈希密码
-	if err := bcrypt.CompareHashAndPassword([]byte(auth.Password), []byte(password)); err != nil {
+	if err := bcrypt.CompareHashAndPassword([]byte(admin.Password), []byte(password)); err != nil {
 		return "", errors.New("invalid credentials")
 	}
 
-	token, err := utils.GenerateToken(auth.ID, s.jwtSecret)
+	token, err := utils.GenerateToken(admin.ID, s.jwtSecret)
 	if err != nil {
 		return "", err
 	}
 
-	_ = s.redisService.SaveKey(c.Context(), token, auth.ID, time.Hour*3)
+	_ = s.redisService.SaveKey(c.Context(), token, admin.ID, time.Hour*3)
 
 	return token, nil
 }
@@ -53,13 +53,13 @@ func (s *Service) Register(c *fiber.Ctx, username string, password string) error
 		return err
 	}
 
-	auth := Auth{
+	admin := Admin{
 		Username: username,
 		Password: string(hashedPassword),
 	}
 
 	// 4. 调用 repo 新增用户
-	if err := s.repo.Create(&auth); err != nil {
+	if err := s.repo.Create(&admin); err != nil {
 		return err
 	}
 

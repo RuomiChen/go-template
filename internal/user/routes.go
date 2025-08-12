@@ -19,4 +19,5 @@ func RegisterRoutes(r fiber.Router, db *gorm.DB, logger zerolog.Logger, redisSer
 	r.Put("/:id", handler.UpdateUser)          //全量更新
 	r.Patch("/:id", handler.PartialUpdateUser) //部分更新
 	r.Delete("/:id", handler.DeleteUser)
+
 }

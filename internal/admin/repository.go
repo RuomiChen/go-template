@@ -1,8 +1,6 @@
-package auth
+package admin
 
 import (
-	"mvc/internal/admin"
-
 	"gorm.io/gorm"
 )
 
@@ -14,14 +12,14 @@ func NewRepository(db *gorm.DB) *Repository {
 	return &Repository{db: db}
 }
 
-func (r *Repository) FindByUsername(username string) (*admin.Admin, error) {
-	var admin admin.Admin
+func (r *Repository) FindByUsername(username string) (*Admin, error) {
+	var admin Admin
 	if err := r.db.Where("username = ?", username).First(&admin).Error; err != nil {
 		return nil, err
 	}
 	return &admin, nil
 }
 
-func (r *Repository) Create(admin *admin.Admin) error {
+func (r *Repository) Create(admin *Admin) error {
 	return r.db.Create(admin).Error
 }

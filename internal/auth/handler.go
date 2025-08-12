@@ -1,19 +1,21 @@
 package auth
 
 import (
+	"fmt"
+	"mvc/internal/admin"
+	"mvc/internal/user"
 	"mvc/pkg/response"
 
 	"github.com/gofiber/fiber/v2"
-	"github.com/rs/zerolog"
 )
 
 type Handler struct {
-	service *Service
-	logger  zerolog.Logger
+	adminService *admin.Service
+	userService  *user.Service
 }
 
-func NewHandler(service *Service, logger zerolog.Logger) *Handler {
-	return &Handler{service: service, logger: logger}
+func NewHandler(adminService *admin.Service, userService *user.Service) *Handler {
+	return &Handler{adminService: adminService, userService: userService}
 }
 
 func (h *Handler) Login(c *fiber.Ctx) error {
@@ -21,35 +23,54 @@ func (h *Handler) Login(c *fiber.Ctx) error {
 	if err := c.BodyParser(&auth); err != nil {
 		return response.Error(c, fiber.StatusBadRequest, "invalid request")
 	}
+	fmt.Print(auth.Role)
 
-	token, err := h.service.Login(c, auth.Username, auth.Password)
-	h.logger.Info().Interface("token", token).Msg("login success")
+	var token string
+	var err error
+
+	switch auth.Role {
+	case 1: // 管理员登录
+		token, err = h.adminService.Login(c, auth.Username, auth.Password)
+	case 0: // 普通用户登录
+		token, err = h.userService.Login(c, auth.Username, auth.Password)
+	default:
+		return response.Error(c, fiber.StatusBadRequest, "invalid role")
+	}
+
 	if err != nil {
-		return response.Error(c, fiber.StatusUnauthorized, "invalid credentials")
+		return response.Error(c, fiber.StatusUnauthorized, err.Error())
 	}
 
 	return response.Success(c, token)
 }
 
-// 注册接口
 func (h *Handler) Register(c *fiber.Ctx) error {
 	var auth Auth
 
 	if err := c.BodyParser(&auth); err != nil {
-		h.logger.Error().Msg("invalid body")
 		return response.Error(c, fiber.StatusBadRequest, "invalid body")
 	}
-	h.logger.Info().Interface("auth", auth).Msg("123")
+
 	if auth.Username == "" || auth.Password == "" {
-		h.logger.Error().Msg("auth username or password empty!")
-		return response.Error(c, fiber.StatusBadRequest, "uth username or password empty")
+		return response.Error(c, fiber.StatusBadRequest, "username or password empty")
 	}
 
-	// 2. 调用 service 注册
-	if err := h.service.Register(c, auth.Username, auth.Password); err != nil {
-		return response.Error(c, fiber.StatusBadRequest, err.Error())
+	switch auth.Role {
+	case 1:
+		// 管理员注册
+		err := h.adminService.Register(c, auth.Username, auth.Password)
+		if err != nil {
+			return response.Error(c, fiber.StatusBadRequest, err.Error())
+		}
+	case 0:
+		// 普通用户注册
+		err := h.userService.Register(auth.Username, auth.Password)
+		if err != nil {
+			return response.Error(c, fiber.StatusBadRequest, err.Error())
+		}
+	default:
+		return response.Error(c, fiber.StatusBadRequest, "invalid role")
 	}
-	h.logger.Info().Msg("auth register success!")
-	// 3. 注册成功返回
+
 	return response.Success(c, nil)
 }

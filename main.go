@@ -1,7 +1,6 @@
 package main
 
 import (
-	"context"
 	"fmt"
 	"mvc/appcontext"
 	"mvc/config"
@@ -23,9 +22,9 @@ func main() {
 	redisRepo := redis.NewRepository(redisClient)
 	redisService := redis.NewService(redisRepo, log)
 
-	if !redisClient.IsConnected(context.Background()) {
-		log.Fatal().Msg("Redis connection failed")
-	}
+	// if !redisClient.IsConnected(context.Background()) {
+	// 	log.Fatal().Msg("Redis connection failed")
+	// }
 	log.Info().Msg("Redis初始化成功")
 
 	dsn := fmt.Sprintf("%s:%s@tcp(%s:%d)/%s?parseTime=true",

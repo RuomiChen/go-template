@@ -138,12 +138,14 @@ func (h *Handler) DeleteNews(c *fiber.Ctx) error {
 	return response.Success(c, nil)
 }
 func (h *Handler) UploadImage(c *fiber.Ctx) error {
-	imagePath, err := h.service.UploadImage(c)
+	saveDir := filepath.Join("uploads", "news") // 统一物理目录
+	imagePath, err := h.service.UploadImage(c, saveDir)
 	if err != nil {
-		return c.Status(400).JSON(fiber.Map{"error": err.Error()})
+		return response.Error(c, 400, err.Error())
 	}
 
 	// 返回图片访问URL
-	url := "/uploads/" + filepath.Base(imagePath)
-	return c.JSON(fiber.Map{"url": url})
+	url := "/" + filepath.ToSlash(filepath.Join(saveDir, filepath.Base(imagePath)))
+	h.logger.Info().Str("news image url", url).Msg("upload news image success!")
+	return response.Success(c, url)
 }

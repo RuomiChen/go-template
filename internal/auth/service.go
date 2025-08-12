@@ -36,7 +36,7 @@ func (s *Service) Login(c *fiber.Ctx, username string, password string) (string,
 		return "", err
 	}
 
-	_ = s.redisService.SaveKey(c.Context(), token, string(auth.ID), time.Hour*3)
+	_ = s.redisService.SaveKey(c.Context(), token, auth.ID, time.Hour*3)
 
 	return token, nil
 }

@@ -9,6 +9,7 @@ import (
 type Repository interface {
 	GetAll() ([]User, error)
 	GetByID(id string) (*User, error)
+	GetByUsername(username string) (*User, error)
 	Create(user *User) error
 	Update(user *User) error
 	PartialUpdate(id string, updates map[string]interface{}) error
@@ -22,6 +23,12 @@ type repository struct {
 
 func NewRepository(db *gorm.DB) Repository {
 	return &repository{db: db}
+}
+
+func (r *repository) GetByUsername(username string) (*User, error) {
+	var user User
+	err := r.db.Model(&User{}).Where("username = ?", username).First(&user).Error
+	return &user, err
 }
 
 func (r *repository) GetAll() ([]User, error) {

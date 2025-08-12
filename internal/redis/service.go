@@ -9,7 +9,7 @@ import (
 )
 
 type Service interface {
-	SaveKey(ctx context.Context, key string, userID string, expiration time.Duration) error
+	SaveKey(ctx context.Context, key string, value interface{}, expiration time.Duration) error
 	ValidateKey(ctx context.Context, key string) (string, error)
 	RemoveKey(ctx context.Context, key string) error
 }
@@ -23,8 +23,8 @@ func NewService(repo Repository, logger zerolog.Logger) Service {
 	return &service{repo: repo, logger: logger}
 }
 
-func (s *service) SaveKey(ctx context.Context, key string, userID string, expiration time.Duration) error {
-	return s.repo.SetKey(ctx, key, userID, expiration)
+func (s *service) SaveKey(ctx context.Context, key string, value interface{}, expiration time.Duration) error {
+	return s.repo.SetKey(ctx, key, value, expiration)
 }
 
 func (s *service) ValidateKey(ctx context.Context, key string) (string, error) {

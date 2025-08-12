@@ -25,7 +25,7 @@ func NewRedisHashStore(redisService redis.Service, prefix string, ttl time.Durat
 func (r *RedisHashStore) Get(hash string) (string, bool) {
 	ctx := context.Background()
 	key := r.prefix + hash
-	val, err := r.redisService.ValidateToken(ctx, key) // 调用接口里的Get操作
+	val, err := r.redisService.ValidateKey(ctx, key) // 调用接口里的Get操作
 	if err != nil || val == "" {
 		return "", false
 	}
@@ -36,5 +36,5 @@ func (r *RedisHashStore) Get(hash string) (string, bool) {
 func (r *RedisHashStore) Set(hash, path string) {
 	ctx := context.Background()
 	key := r.prefix + hash
-	_ = r.redisService.SaveToken(ctx, key, path, r.ttl) // 调用接口里的Set操作
+	_ = r.redisService.SaveKey(ctx, key, path, r.ttl) // 调用接口里的Set操作
 }

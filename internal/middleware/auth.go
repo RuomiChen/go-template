@@ -59,7 +59,7 @@ func AuthMiddleware(logger zerolog.Logger, jwtSecret string, redisService redis.
 
 		// --- 新增 Redis 校验部分 ---
 		ctx := context.Background()
-		userID, err := redisService.ValidateToken(ctx, tokenStr)
+		userID, err := redisService.ValidateKey(ctx, tokenStr)
 		if err != nil {
 			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
 				"error": "failed to validate token (redis error)",

@@ -9,9 +9,9 @@ import (
 )
 
 type Service interface {
-	SaveToken(ctx context.Context, token string, userID string, expiration time.Duration) error
-	ValidateToken(ctx context.Context, token string) (string, error)
-	RemoveToken(ctx context.Context, token string) error
+	SaveKey(ctx context.Context, key string, userID string, expiration time.Duration) error
+	ValidateKey(ctx context.Context, key string) (string, error)
+	RemoveKey(ctx context.Context, key string) error
 }
 
 type service struct {
@@ -23,14 +23,13 @@ func NewService(repo Repository, logger zerolog.Logger) Service {
 	return &service{repo: repo, logger: logger}
 }
 
-func (s *service) SaveToken(ctx context.Context, token string, userID string, expiration time.Duration) error {
-	return s.repo.SetToken(ctx, token, userID, expiration)
+func (s *service) SaveKey(ctx context.Context, key string, userID string, expiration time.Duration) error {
+	return s.repo.SetKey(ctx, key, userID, expiration)
 }
 
-func (s *service) ValidateToken(ctx context.Context, token string) (string, error) {
-	s.logger.Info().Str("valid token:", token).Msg("validate token")
-	userID, err := s.repo.GetToken(ctx, token)
-	s.logger.Info().Str("userID:", userID).Msg("validate token")
+func (s *service) ValidateKey(ctx context.Context, key string) (string, error) {
+	s.logger.Info().Str("valid key:", key).Msg("validate key")
+	key, err := s.repo.GetKey(ctx, key)
 	if err == redis.Nil {
 		// key 不存在或过期，正常情况，不算错误
 		return "", nil
@@ -39,9 +38,9 @@ func (s *service) ValidateToken(ctx context.Context, token string) (string, erro
 		// 其他redis异常
 		return "", err
 	}
-	return userID, nil
+	return key, nil
 }
 
-func (s *service) RemoveToken(ctx context.Context, token string) error {
-	return s.repo.DeleteToken(ctx, token)
+func (s *service) RemoveKey(ctx context.Context, key string) error {
+	return s.repo.DeleteKey(ctx, key)
 }

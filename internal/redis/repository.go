@@ -6,9 +6,9 @@ import (
 )
 
 type Repository interface {
-	SetToken(ctx context.Context, token string, userID string, expiration time.Duration) error
-	GetToken(ctx context.Context, token string) (string, error)
-	DeleteToken(ctx context.Context, token string) error
+	SetKey(ctx context.Context, key string, userID string, expiration time.Duration) error
+	GetKey(ctx context.Context, key string) (string, error)
+	DeleteKey(ctx context.Context, key string) error
 }
 
 type repository struct {
@@ -19,14 +19,14 @@ func NewRepository(client *Client) Repository {
 	return &repository{client: client}
 }
 
-func (r *repository) SetToken(ctx context.Context, token string, userID string, expiration time.Duration) error {
-	return r.client.Set(ctx, token, userID, expiration)
+func (r *repository) SetKey(ctx context.Context, key string, userID string, expiration time.Duration) error {
+	return r.client.Set(ctx, key, userID, expiration)
 }
 
-func (r *repository) GetToken(ctx context.Context, token string) (string, error) {
-	return r.client.Get(ctx, token)
+func (r *repository) GetKey(ctx context.Context, key string) (string, error) {
+	return r.client.Get(ctx, key)
 }
 
-func (r *repository) DeleteToken(ctx context.Context, token string) error {
-	return r.client.Del(ctx, token)
+func (r *repository) DeleteKey(ctx context.Context, key string) error {
+	return r.client.Del(ctx, key)
 }

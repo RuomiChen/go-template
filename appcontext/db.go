@@ -3,7 +3,8 @@ package appcontext
 import (
 	"log"
 	"mvc/internal/auth"
-	"mvc/internal/friend"
+	"mvc/internal/friend_relation"
+	"mvc/internal/friend_request"
 	"mvc/internal/news"
 	"mvc/internal/user"
 
@@ -21,8 +22,8 @@ func InitDB(dsn string) *gorm.DB {
 	if err := db.AutoMigrate(
 		&auth.Auth{},
 		&user.User{},
-		&friend.FriendRequest{},
-		&friend.FriendRelation{},
+		&friend_request.FriendRequest{},
+		&friend_relation.FriendRelation{},
 		&news.News{},
 	); err != nil {
 		log.Fatalf("failed to migrate database: %v", err)

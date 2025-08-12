@@ -1,4 +1,4 @@
-package friend
+package friend_relation
 
 import (
 	"github.com/gofiber/fiber/v2"
@@ -8,8 +8,10 @@ import (
 )
 
 func RegisterRoutes(r fiber.Router, db *gorm.DB, logger zerolog.Logger) {
-	service := NewFriendService(db)
-	handler := NewFriendHandler(service, logger)
+	repo := NewRepository(db)
+	service := NewService(repo)
+	handler := NewHandler(service, logger)
 
-	r.Get("/friend", websocket.New(handler.Handle))
+	r.Get("/friend_relation", websocket.New(handler.Handle))
+
 }

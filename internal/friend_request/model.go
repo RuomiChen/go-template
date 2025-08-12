@@ -1,4 +1,4 @@
-package friend
+package friend_request
 
 import "mvc/internal/common"
 
@@ -18,9 +18,4 @@ type FriendRequest struct {
 	ToUserID   uint                `gorm:"index;not null" json:"to_user_id"`
 	Message    string              `gorm:"type:text" json:"message,omitempty"`
 	Status     FriendRequestStatus `gorm:"type:tinyint;default:0" json:"status"`
-}
-type FriendRelation struct {
-	common.BaseModel
-	UserA uint `gorm:"index;not null"` // keep smaller id in UserA to ensure uniqueness if you want
-	UserB uint `gorm:"index;not null"`
 }

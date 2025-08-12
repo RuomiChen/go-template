@@ -1,18 +1,17 @@
-package friend
+package friend_request
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
-
-	"gorm.io/gorm"
 )
 
 type FriendService struct {
-	db *gorm.DB
+	repo FriendRepository
 }
 
-func NewFriendService(db *gorm.DB) *FriendService {
-	return &FriendService{db: db}
+func NewService(repo FriendRepository) *FriendService {
+	return &FriendService{repo: repo}
 }
 
 type AddFriendReq struct {
@@ -21,7 +20,7 @@ type AddFriendReq struct {
 	Message    string `json:"message,omitempty"`
 }
 
-func (s *FriendService) AddFriend(rawData json.RawMessage) error {
+func (s *FriendService) AddFriend(ctx context.Context, rawData json.RawMessage) error {
 	var req AddFriendReq
 	if err := json.Unmarshal(rawData, &req); err != nil {
 		return errors.New("invalid add_friend data")
@@ -35,10 +34,7 @@ func (s *FriendService) AddFriend(rawData json.RawMessage) error {
 		return errors.New("cannot add yourself as friend")
 	}
 
-	var count int64
-	err := s.db.Model(&FriendRequest{}).
-		Where("from_user_id = ? AND to_user_id = ?", req.FromUserID, req.ToUserID).
-		Count(&count).Error
+	count, err := s.repo.CountPendingRequest(ctx, req.FromUserID, req.ToUserID)
 	if err != nil {
 		return err
 	}
@@ -52,7 +48,7 @@ func (s *FriendService) AddFriend(rawData json.RawMessage) error {
 		ToUserID:   req.ToUserID,
 		Status:     RequestPending,
 	}
-	if err := s.db.Create(&relation).Error; err != nil {
+	if err := s.repo.CreateFriendRequest(ctx, &relation); err != nil {
 		return err
 	}
 

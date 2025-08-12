@@ -1,6 +1,7 @@
-package friend
+package friend_request
 
 import (
+	"context"
 	"encoding/json"
 
 	"github.com/gofiber/websocket/v2"
@@ -39,7 +40,7 @@ func (h *FriendHandler) Handle(c *websocket.Conn) {
 
 		switch message.Type {
 		case "add_friend":
-			err := h.service.AddFriend(message.Data)
+			err := h.service.AddFriend(context.Background(), message.Data)
 			if err != nil {
 				h.sendError(c, err.Error())
 			} else {

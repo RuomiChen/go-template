@@ -21,6 +21,7 @@ func InitDB(dsn string) *gorm.DB {
 	if err := db.AutoMigrate(
 		&auth.Auth{},
 		&user.User{},
+		&friend.FriendRequest{},
 		&friend.FriendRelation{},
 		&news.News{},
 	); err != nil {

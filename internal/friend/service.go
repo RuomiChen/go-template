@@ -16,8 +16,9 @@ func NewFriendService(db *gorm.DB) *FriendService {
 }
 
 type AddFriendReq struct {
-	UserID   string `json:"user_id"`
-	FriendID string `json:"friend_id"`
+	FromUserID uint   `json:"from_user_id"`
+	ToUserID   uint   `json:"to_user_id"`
+	Message    string `json:"message,omitempty"`
 }
 
 func (s *FriendService) AddFriend(rawData json.RawMessage) error {
@@ -26,17 +27,17 @@ func (s *FriendService) AddFriend(rawData json.RawMessage) error {
 		return errors.New("invalid add_friend data")
 	}
 
-	if req.UserID == "" || req.FriendID == "" {
+	if req.FromUserID == 0 || req.ToUserID == 0 {
 		return errors.New("user_id and friend_id cannot be empty")
 	}
 
-	if req.UserID == req.FriendID {
+	if req.FromUserID == req.ToUserID {
 		return errors.New("cannot add yourself as friend")
 	}
 
 	var count int64
-	err := s.db.Model(&FriendRelation{}).
-		Where("user_id = ? AND friend_id = ?", req.UserID, req.FriendID).
+	err := s.db.Model(&FriendRequest{}).
+		Where("from_user_id = ? AND to_user_id = ?", req.FromUserID, req.ToUserID).
 		Count(&count).Error
 	if err != nil {
 		return err
@@ -45,9 +46,11 @@ func (s *FriendService) AddFriend(rawData json.RawMessage) error {
 		return errors.New("already friends")
 	}
 
-	relation := FriendRelation{
-		UserID:   req.UserID,
-		FriendID: req.FriendID,
+	relation := FriendRequest{
+		Message:    req.Message,
+		FromUserID: req.FromUserID,
+		ToUserID:   req.ToUserID,
+		Status:     RequestPending,
 	}
 	if err := s.db.Create(&relation).Error; err != nil {
 		return err

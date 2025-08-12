@@ -11,12 +11,12 @@ import (
 )
 
 type Handler struct {
-	service      Service
+	service      *Service
 	logger       zerolog.Logger
 	redisService redis.Service
 }
 
-func NewHandler(service Service, logger zerolog.Logger, redisService redis.Service) *Handler {
+func NewHandler(service *Service, logger zerolog.Logger, redisService redis.Service) *Handler {
 	return &Handler{service: service, logger: logger, redisService: redisService}
 }
 

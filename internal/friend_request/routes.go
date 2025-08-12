@@ -12,5 +12,5 @@ func RegisterRoutes(r fiber.Router, db *gorm.DB, logger zerolog.Logger) {
 	service := NewService(repo)
 	handler := NewFriendHandler(service, logger)
 
-	r.Get("/friend", websocket.New(handler.Handle))
+	r.Get("/friend_request", websocket.New(handler.Handle))
 }

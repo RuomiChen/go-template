@@ -20,7 +20,7 @@ func Register(app *fiber.App, appCtx *appcontext.AppContext) {
 	// v1 API
 	v1 := api.Group("/v1")
 	userGroup := v1.Group("/users", middleware.AuthMiddleware(appCtx.Logger, appCtx.JWTSecret, appCtx.RedisService))
-	user.RegisterRoutes(userGroup, appCtx.DB, appCtx.Logger, appCtx.RedisService)
+	user.RegisterRoutes(userGroup, appCtx.DB, appCtx.Logger, appCtx.RedisService, appCtx.JWTSecret)
 
 	// 未来新增模块，只需要这样
 	// postGroup := v1.Group("/posts")

@@ -20,6 +20,10 @@ type AddFriendReq struct {
 	Message    string `json:"message,omitempty"`
 }
 
+// func (s *FriendService) RequestList(ctx context.Context, rawData json.RawMessage) error {
+
+// }
+
 func (s *FriendService) AddFriend(ctx context.Context, rawData json.RawMessage) error {
 	var req AddFriendReq
 	if err := json.Unmarshal(rawData, &req); err != nil {

@@ -46,6 +46,13 @@ func (h *FriendHandler) Handle(c *websocket.Conn) {
 			} else {
 				h.sendSuccess(c, "friend added successfully")
 			}
+		// case "request_list":
+		// 	err := h.service.RequestList(context.Background(), message.Data)
+		// 	if err != nil {
+		// 		h.sendError(c, err.Error())
+		// 	} else {
+		// 		h.sendSuccess(c, "friend added successfully")
+		// 	}
 		default:
 			h.sendError(c, "unknown message type: "+message.Type)
 		}

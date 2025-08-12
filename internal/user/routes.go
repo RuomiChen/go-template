@@ -8,9 +8,9 @@ import (
 	"gorm.io/gorm"
 )
 
-func RegisterRoutes(r fiber.Router, db *gorm.DB, logger zerolog.Logger, redisService redis.Service) {
+func RegisterRoutes(r fiber.Router, db *gorm.DB, logger zerolog.Logger, redisService redis.Service, jwtSecret string) {
 	repo := NewRepository(db)
-	service := NewService(repo)
+	service := NewService(repo, jwtSecret, redisService)
 	handler := NewHandler(service, logger, redisService)
 
 	r.Get("/", handler.GetUserList)

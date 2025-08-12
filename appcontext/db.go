@@ -2,6 +2,7 @@ package appcontext
 
 import (
 	"log"
+	"mvc/internal/auth"
 	"mvc/internal/friend"
 	"mvc/internal/news"
 	"mvc/internal/user"
@@ -18,6 +19,7 @@ func InitDB(dsn string) *gorm.DB {
 
 	// 自动迁移
 	if err := db.AutoMigrate(
+		&auth.Auth{},
 		&user.User{},
 		&friend.FriendRelation{},
 		&news.News{},

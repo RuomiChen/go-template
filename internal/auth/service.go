@@ -21,19 +21,22 @@ func NewService(repo *Repository, jwtSecret string, redisService redis.Service) 
 }
 
 func (s *Service) Login(c *fiber.Ctx, username string, password string) (string, error) {
-	user, err := s.repo.FindByUsername(username)
-
-	// 用 bcrypt 比对明文密码和数据库哈希密码
-	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password)); err != nil {
-		return "", errors.New("invalid credentials")
-	}
-
-	token, err := utils.GenerateToken(user.ID, s.jwtSecret)
+	auth, err := s.repo.FindByUsername(username)
 	if err != nil {
 		return "", err
 	}
 
-	_ = s.redisService.SaveKey(c.Context(), token, string(user.ID), time.Hour*3)
+	// 用 bcrypt 比对明文密码和数据库哈希密码
+	if err := bcrypt.CompareHashAndPassword([]byte(auth.Password), []byte(password)); err != nil {
+		return "", errors.New("invalid credentials")
+	}
+
+	token, err := utils.GenerateToken(auth.ID, s.jwtSecret)
+	if err != nil {
+		return "", err
+	}
+
+	_ = s.redisService.SaveKey(c.Context(), token, string(auth.ID), time.Hour*3)
 
 	return token, nil
 }
@@ -50,14 +53,13 @@ func (s *Service) Register(c *fiber.Ctx, username string, password string) error
 		return err
 	}
 
-	// 3. 创建新用户结构体，密码字段存哈希
-	user := User{
+	auth := Auth{
 		Username: username,
 		Password: string(hashedPassword),
 	}
 
 	// 4. 调用 repo 新增用户
-	if err := s.repo.Create(&user); err != nil {
+	if err := s.repo.Create(&auth); err != nil {
 		return err
 	}
 

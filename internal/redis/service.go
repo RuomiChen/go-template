@@ -28,7 +28,7 @@ func (s *service) SaveKey(ctx context.Context, key string, userID string, expira
 }
 
 func (s *service) ValidateKey(ctx context.Context, key string) (string, error) {
-	s.logger.Info().Str("valid key:", key).Msg("validate key")
+	s.logger.Info().Str("key", key).Msg("start valid")
 	key, err := s.repo.GetKey(ctx, key)
 	if err == redis.Nil {
 		// key 不存在或过期，正常情况，不算错误

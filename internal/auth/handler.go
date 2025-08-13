@@ -25,14 +25,14 @@ func (h *Handler) Login(c *fiber.Ctx) error {
 	}
 	fmt.Print(auth.Role)
 
-	var token string
+	var loginResp interface{}
 	var err error
 
 	switch auth.Role {
 	case 1: // 管理员登录
-		token, err = h.adminService.Login(c, auth.Username, auth.Password)
+		loginResp, err = h.adminService.Login(c, auth.Username, auth.Password)
 	case 0: // 普通用户登录
-		token, err = h.userService.Login(c, auth.Username, auth.Password)
+		loginResp, err = h.userService.Login(c, auth.Username, auth.Password)
 	default:
 		return response.Error(c, fiber.StatusBadRequest, "invalid role")
 	}
@@ -41,7 +41,7 @@ func (h *Handler) Login(c *fiber.Ctx) error {
 		return response.Error(c, fiber.StatusUnauthorized, err.Error())
 	}
 
-	return response.Success(c, token)
+	return response.Success(c, loginResp)
 }
 
 func (h *Handler) Register(c *fiber.Ctx) error {

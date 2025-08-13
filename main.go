@@ -9,6 +9,7 @@ import (
 	"mvc/routes"
 
 	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/middleware/cors"
 )
 
 func main() {
@@ -44,6 +45,14 @@ func main() {
 	appCtx := appcontext.NewAppContext(db, log, redisService, cfg.JWT.Secret)
 
 	app := fiber.New()
+
+	// 配置 CORS 中间件
+	app.Use(cors.New(cors.Config{
+		AllowOrigins:     "http://localhost:3000", // 允许的前端地址
+		AllowMethods:     "GET,POST,PUT,DELETE,OPTIONS",
+		AllowHeaders:     "Content-Type, Authorization",
+		AllowCredentials: true,
+	}))
 
 	routes.Register(app, appCtx)
 

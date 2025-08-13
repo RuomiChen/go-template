@@ -30,15 +30,16 @@ func (s *FriendService) AddFriend(ctx context.Context, rawData json.RawMessage) 
 		return errors.New("invalid add_friend data")
 	}
 
-	if req.FromUserID == 0 || req.ToUserID == 0 {
-		return errors.New("user_id and friend_id cannot be empty")
+	if req.ToUserID == 0 {
+		return errors.New("friend_id cannot be empty")
 	}
+	FromUserID := ctx.Value("id").(uint)
 
-	if req.FromUserID == req.ToUserID {
+	if FromUserID == req.ToUserID {
 		return errors.New("cannot add yourself as friend")
 	}
 
-	count, err := s.repo.CountPendingRequest(ctx, req.FromUserID, req.ToUserID)
+	count, err := s.repo.CountPendingRequest(ctx, FromUserID, req.ToUserID)
 	if err != nil {
 		return err
 	}
@@ -48,7 +49,7 @@ func (s *FriendService) AddFriend(ctx context.Context, rawData json.RawMessage) 
 
 	relation := FriendRequest{
 		Message:    req.Message,
-		FromUserID: req.FromUserID,
+		FromUserID: FromUserID,
 		ToUserID:   req.ToUserID,
 		Status:     RequestPending,
 	}

@@ -4,8 +4,6 @@ import (
 	"mvc/internal/redis"
 	"mvc/pkg/utils"
 	"time"
-
-	"github.com/gofiber/fiber/v2"
 )
 
 type Service interface {
@@ -15,7 +13,6 @@ type Service interface {
 	DeleteTag(id string) error
 	UpdateTag(id string, tag *Tag) (*Tag, error)
 	PartialUpdateTag(id string, updates map[string]interface{}) (*Tag, error)
-	UploadImage(c *fiber.Ctx, saveDir string) (string, error)
 }
 
 type service struct {
@@ -64,8 +61,4 @@ func (s *service) PartialUpdateTag(id string, updates map[string]interface{}) (*
 		return nil, err
 	}
 	return s.repo.GetByID(id)
-}
-func (s *service) UploadImage(c *fiber.Ctx, saveDir string) (string, error) {
-	allowExts := []string{".jpg", ".jpeg", ".png"}
-	return utils.UploadImageWithHashCheck(c, "image", saveDir, allowExts, s.hashStore)
 }

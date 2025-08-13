@@ -3,7 +3,6 @@ package tag
 import (
 	"errors"
 	"mvc/pkg/response"
-	"path/filepath"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/rs/zerolog"
@@ -136,16 +135,4 @@ func (h *Handler) DeleteTag(c *fiber.Ctx) error {
 	// 3. 成功返回
 	h.logger.Info().Str("id", id).Msg("删除新闻成功")
 	return response.Success(c, nil)
-}
-func (h *Handler) UploadImage(c *fiber.Ctx) error {
-	saveDir := filepath.Join("uploads", "tag") // 统一物理目录
-	imagePath, err := h.service.UploadImage(c, saveDir)
-	if err != nil {
-		return response.Error(c, 400, err.Error())
-	}
-
-	// 返回图片访问URL
-	url := "/" + filepath.ToSlash(filepath.Join(saveDir, filepath.Base(imagePath)))
-	h.logger.Info().Str("tag image url", url).Msg("upload tag image success!")
-	return response.Success(c, url)
 }

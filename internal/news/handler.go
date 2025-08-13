@@ -188,7 +188,7 @@ func (h *Handler) GetNewsByTag(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
 
 	}
-	h.logger.Info().Interface("news", newsList).Msg("succ")
+	h.logger.Info().Interface("news", newsList).Msg("get newsList by tag success!")
 
 	return response.Success(c, newsList)
 }

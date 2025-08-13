@@ -15,6 +15,8 @@ type Repository interface {
 	Delete(id string) error
 	GetPaged(page, pageSize int) ([]News, int64, error)
 	GetTopNews(limit int) ([]News, error)
+
+	GetNewsByTag(tagID uint, limit, offset int) ([]News, error)
 }
 
 type repository struct {
@@ -65,4 +67,15 @@ func (r *repository) GetTopNews(limit int) ([]News, error) {
 		return nil, err
 	}
 	return newsList, nil
+}
+
+// 根据 tagId 获取新闻列表
+func (r *repository) GetNewsByTag(tagID uint, limit, offset int) ([]News, error) {
+	var newsList []News
+	err := r.db.Joins("JOIN news_tag nt ON nt.news_id = news.id").
+		Where("nt.tag_id = ?", tagID).
+		Preload("Tags"). // 加载新闻关联标签
+		Limit(limit).Offset(offset).
+		Find(&newsList).Error
+	return newsList, err
 }

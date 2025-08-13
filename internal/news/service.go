@@ -17,6 +17,8 @@ type Service interface {
 	PartialUpdateNews(id string, updates map[string]interface{}) (*News, error)
 	UploadImage(c *fiber.Ctx, saveDir string) (string, error)
 	GetTopNews(limit int) ([]News, error)
+
+	GetNewsByTag(tagID uint, limit, offset int) ([]News, error)
 }
 
 type service struct {
@@ -76,4 +78,8 @@ func (s *service) GetTopNews(limit int) ([]News, error) {
 		return nil, err
 	}
 	return newsList, nil
+}
+
+func (s *service) GetNewsByTag(tagID uint, limit, offset int) ([]News, error) {
+	return s.repo.GetNewsByTag(tagID, limit, offset)
 }

@@ -4,6 +4,7 @@ import (
 	"errors"
 	"mvc/pkg/response"
 	"path/filepath"
+	"strconv"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/rs/zerolog"
@@ -163,4 +164,31 @@ func (h *Handler) UploadImage(c *fiber.Ctx) error {
 	url := "/" + filepath.ToSlash(filepath.Join(saveDir, filepath.Base(imagePath)))
 	h.logger.Info().Str("news image url", url).Msg("upload news image success!")
 	return response.Success(c, url)
+}
+
+func (h *Handler) GetNewsByTag(c *fiber.Ctx) error {
+	tagIDStr := c.Params("id")
+	tagID, err := strconv.Atoi(tagIDStr)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "invalid tagId"})
+	}
+
+	limitStr := c.Query("size", "10") // 每页大小
+	pageStr := c.Query("page", "1")   // 页码，从 1 开始
+
+	limit, _ := strconv.Atoi(limitStr)
+	page, _ := strconv.Atoi(pageStr)
+	if page < 1 {
+		page = 1
+	}
+	offset := (page - 1) * limit // 计算偏移量
+
+	newsList, err := h.service.GetNewsByTag(uint(tagID), limit, offset)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
+
+	}
+	h.logger.Info().Interface("news", newsList).Msg("succ")
+
+	return response.Success(c, newsList)
 }

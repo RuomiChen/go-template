@@ -14,6 +14,7 @@ type Repository interface {
 	PartialUpdate(id string, updates map[string]interface{}) error
 	Delete(id string) error
 	GetPaged(page, pageSize int) ([]News, int64, error)
+	GetTopNews(limit int) ([]News, error)
 }
 
 type repository struct {
@@ -56,4 +57,12 @@ func (r *repository) Delete(id string) error {
 }
 func (r *repository) GetPaged(page, pageSize int) ([]News, int64, error) {
 	return common.Paginate[News](r.db, page, pageSize)
+}
+func (r *repository) GetTopNews(limit int) ([]News, error) {
+	var newsList []News
+	err := r.db.Order("views DESC").Limit(limit).Find(&newsList).Error
+	if err != nil {
+		return nil, err
+	}
+	return newsList, nil
 }

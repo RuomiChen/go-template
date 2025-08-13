@@ -16,6 +16,7 @@ type Service interface {
 	UpdateNews(id string, news *News) (*News, error)
 	PartialUpdateNews(id string, updates map[string]interface{}) (*News, error)
 	UploadImage(c *fiber.Ctx, saveDir string) (string, error)
+	GetTopNews(limit int) ([]News, error)
 }
 
 type service struct {
@@ -68,4 +69,11 @@ func (s *service) PartialUpdateNews(id string, updates map[string]interface{}) (
 func (s *service) UploadImage(c *fiber.Ctx, saveDir string) (string, error) {
 	allowExts := []string{".jpg", ".jpeg", ".png"}
 	return utils.UploadImageWithHashCheck(c, "image", saveDir, allowExts, s.hashStore)
+}
+func (s *service) GetTopNews(limit int) ([]News, error) {
+	newsList, err := s.repo.GetTopNews(limit)
+	if err != nil {
+		return nil, err
+	}
+	return newsList, nil
 }

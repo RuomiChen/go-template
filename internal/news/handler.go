@@ -19,6 +19,21 @@ func NewHandler(service Service, logger zerolog.Logger) *Handler {
 	return &Handler{service: service, logger: logger}
 }
 
+func (h *Handler) GetTopNews(c *fiber.Ctx) error {
+	n := c.QueryInt("n", 10)
+	if n <= 0 {
+		n = 10
+	}
+
+	news, err := h.service.GetTopNews(n)
+	if err != nil {
+		h.logger.Error().Err(err).Msg("failed to get news list")
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
+	}
+
+	return response.Success(c, news)
+}
+
 func (h *Handler) GetNewsList(c *fiber.Ctx) error {
 	// 1. 读取分页参数，设置默认值
 	page := c.QueryInt("page", 1)

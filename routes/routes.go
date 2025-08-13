@@ -6,6 +6,7 @@ import (
 	"mvc/internal/friend_request"
 	"mvc/internal/middleware"
 	"mvc/internal/news"
+	"mvc/internal/tag"
 	"mvc/internal/user"
 	"mvc/internal/ws"
 
@@ -26,6 +27,9 @@ func Register(app *fiber.App, appCtx *appcontext.AppContext) {
 
 	newsGroup := v1.Group("/news")
 	news.RegisterRoutes(newsGroup, appCtx.DB, appCtx.Logger, appCtx.RedisService)
+
+	tagGroup := v1.Group("/tag")
+	tag.RegisterRoutes(tagGroup, appCtx.DB, appCtx.Logger, appCtx.RedisService)
 
 	authGroup := v1.Group("/auth")
 	auth.RegisterRoutes(authGroup, appCtx.DB, appCtx.Logger, appCtx.RedisService, appCtx.JWTSecret)

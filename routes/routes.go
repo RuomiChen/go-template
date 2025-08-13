@@ -30,9 +30,10 @@ func Register(app *fiber.App, appCtx *appcontext.AppContext) {
 	authGroup := v1.Group("/auth")
 	auth.RegisterRoutes(authGroup, appCtx.DB, appCtx.Logger, appCtx.RedisService, appCtx.JWTSecret)
 
-	friendRequestGroup := v1.Group("/friend_request")
+	friendRequestGroup := v1.Group("/friend_request", middleware.AuthMiddleware(appCtx.Logger, appCtx.JWTSecret, appCtx.RedisService))
 	friend_request.RegisterRoutes(friendRequestGroup, appCtx.DB, appCtx.Logger)
 
 	wsGroup := v1.Group("/ws")
 	ws.RegisterRoutes(wsGroup, appCtx.DB, appCtx.Logger)
+
 }

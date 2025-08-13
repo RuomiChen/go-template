@@ -2,31 +2,24 @@ package middleware
 
 import (
 	"context"
-	"errors"
 	"mvc/internal/redis"
 	"mvc/pkg/utils"
 	"strings"
 
 	"github.com/gofiber/fiber/v2"
-	"github.com/golang-jwt/jwt/v4"
 	"github.com/rs/zerolog"
 )
 
-// AuthMiddleware 校验 JWT 并结合 Redis 判断 Token 是否有效
 func AuthMiddleware(logger zerolog.Logger, jwtSecret string, redisService redis.Service) fiber.Handler {
 	return func(c *fiber.Ctx) error {
 		authHeader := c.Get("Authorization")
 		if authHeader == "" {
-			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
-				"error": "missing Authorization header",
-			})
+			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "missing Authorization header"})
 		}
 
 		parts := strings.SplitN(authHeader, " ", 2)
 		if len(parts) != 2 || parts[0] != "Bearer" {
-			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
-				"error": "invalid Authorization format",
-			})
+			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "invalid Authorization format"})
 		}
 
 		tokenStr := parts[1]
@@ -34,45 +27,39 @@ func AuthMiddleware(logger zerolog.Logger, jwtSecret string, redisService redis.
 		// 解析 JWT
 		claims, err := utils.ParseToken(tokenStr, jwtSecret)
 		if err != nil {
-			var ve *jwt.ValidationError
-			if errors.As(err, &ve) {
-				switch {
-				case ve.Errors&jwt.ValidationErrorExpired != 0:
-					return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
-						"error": "token expired",
-					})
-				case ve.Errors&jwt.ValidationErrorSignatureInvalid != 0:
-					return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
-						"error": "invalid token signature",
-					})
-				default:
-					return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
-						"error": "invalid token",
-					})
-				}
-			}
-
-			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
-				"error": "invalid token",
-			})
+			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "invalid token"})
 		}
 
-		// --- 新增 Redis 校验部分 ---
+		// Redis 校验
 		ctx := context.Background()
-		userID, err := redisService.ValidateKey(ctx, tokenStr)
-		if err != nil {
-			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
-				"error": "failed to validate token (redis error)",
-			})
+		storedID, err := redisService.ValidateKey(ctx, tokenStr)
+		if err != nil || storedID == "" {
+			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "token invalid or expired"})
 		}
-		if userID == "" {
-			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
-				"error": "token invalid or logged out",
-			})
-		}
-		// ---------------------------
 
-		c.Locals("user_id", claims["user_id"])
+		// 从 claims 获取 id & role
+		idVal, ok := claims["id"].(float64)
+		if !ok {
+			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "invalid id format"})
+		}
+		roleVal, ok := claims["role"].(float64)
+		if !ok {
+			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "invalid role format"})
+		}
+
+		// 存上下文
+		c.Locals("id", int(idVal))
+		c.Locals("role", int(roleVal))
+
+		return c.Next()
+	}
+}
+func AdminOnly() fiber.Handler {
+	return func(c *fiber.Ctx) error {
+		role, ok := c.Locals("role").(int)
+		if !ok || role != 1 {
+			return c.Status(fiber.StatusForbidden).JSON(fiber.Map{"error": "permission denied"})
+		}
 		return c.Next()
 	}
 }

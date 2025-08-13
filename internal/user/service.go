@@ -99,7 +99,7 @@ func (s *Service) Login(c *fiber.Ctx, username, password string) (string, error)
 		return "", errors.New("invalid username or password")
 	}
 
-	token, err := utils.GenerateToken(user.ID, s.jwtSecret)
+	token, err := utils.GenerateToken(user.ID, 0, s.jwtSecret)
 	if err != nil {
 		return "", err
 	}

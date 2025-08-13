@@ -31,7 +31,7 @@ func (s *Service) Login(c *fiber.Ctx, username string, password string) (string,
 		return "", errors.New("invalid credentials")
 	}
 
-	token, err := utils.GenerateToken(admin.ID, s.jwtSecret)
+	token, err := utils.GenerateToken(admin.ID, 1, s.jwtSecret)
 	if err != nil {
 		return "", err
 	}

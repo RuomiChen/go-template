@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"mvc/pkg/contextkeys"
 )
 
 type FriendService struct {
@@ -33,7 +34,7 @@ func (s *FriendService) AddFriend(ctx context.Context, rawData json.RawMessage) 
 	if req.ToUserID == 0 {
 		return errors.New("friend_id cannot be empty")
 	}
-	FromUserID := ctx.Value("id").(uint)
+	FromUserID := ctx.Value(contextkeys.IDKey).(uint)
 
 	if FromUserID == req.ToUserID {
 		return errors.New("cannot add yourself as friend")

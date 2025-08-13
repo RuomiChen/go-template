@@ -3,6 +3,7 @@ package friend_request
 import (
 	"context"
 	"encoding/json"
+	"mvc/pkg/contextkeys"
 	"mvc/pkg/response"
 
 	"github.com/gofiber/fiber/v2"
@@ -42,7 +43,7 @@ func (h *FriendHandler) AddFriend(c *fiber.Ctx) error {
 	}
 
 	// 传入带有用户 ID 的 context，方便 Service 取用户 ID
-	ctx := context.WithValue(c.UserContext(), "id", uint(ID))
+	ctx := context.WithValue(c.UserContext(), contextkeys.IDKey, uint(ID))
 
 	err = h.service.AddFriend(ctx, rawData)
 	if err != nil {

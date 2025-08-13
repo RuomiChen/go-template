@@ -8,6 +8,7 @@ import (
 
 	"github.com/gofiber/fiber/v2"
 	"golang.org/x/crypto/bcrypt"
+	"gorm.io/gorm"
 )
 
 type Service struct {
@@ -59,7 +60,10 @@ func (s *Service) PartialUpdateUser(id string, updates map[string]interface{}) (
 }
 func (s *Service) Register(username, password string) error {
 	// 先查用户名是否已存在
-	existingUser, _ := s.repo.GetByUsername(username)
+	existingUser, err := s.repo.GetByUsername(username)
+	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+		return err // 查询异常直接返回错误
+	}
 	if existingUser != nil {
 		return errors.New("username already exists")
 	}
@@ -84,28 +88,33 @@ func (s *Service) Register(username, password string) error {
 	return nil
 }
 
-func (s *Service) Login(c *fiber.Ctx, username, password string) (string, error) {
+func (s *Service) Login(c *fiber.Ctx, username, password string) (*LoginResponse, error) {
 	user, err := s.repo.GetByUsername(username)
-	if err != nil {
-		return "", errors.New("invalid username or password")
-	}
-	if user == nil {
-		return "", errors.New("invalid username or password")
+	if err != nil || user == nil {
+		return nil, errors.New("invalid username or password")
 	}
 
 	// 校验密码
 	err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password))
 	if err != nil {
-		return "", errors.New("invalid username or password")
+		return nil, errors.New("invalid username or password")
 	}
 
 	token, err := utils.GenerateToken(user.ID, 0, s.jwtSecret)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
 	_ = s.redisService.SaveKey(c.Context(), token, user.ID, time.Hour*3)
 
-	// 登录成功，返回 user 结构体
-	return token, nil
+	// 返回结构体，包含token和user
+	return &LoginResponse{
+		Token: token,
+		User:  user,
+	}, nil
+}
+
+type LoginResponse struct {
+	Token string      `json:"token"`
+	User  interface{} `json:"user"` // 或者具体 user 类型
 }

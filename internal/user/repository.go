@@ -27,8 +27,12 @@ func NewRepository(db *gorm.DB) Repository {
 
 func (r *repository) GetByUsername(username string) (*User, error) {
 	var user User
-	err := r.db.Model(&User{}).Where("username = ?", username).First(&user).Error
-	return &user, err
+	err := r.db.Where("username = ?", username).First(&user).Error
+	if err != nil {
+		// 找不到用户返回 nil 和错误
+		return nil, err
+	}
+	return &user, nil
 }
 
 func (r *repository) GetAll() ([]User, error) {

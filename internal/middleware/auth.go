@@ -2,6 +2,7 @@ package middleware
 
 import (
 	"context"
+	"fmt"
 	"mvc/internal/redis"
 	"mvc/pkg/utils"
 	"strings"
@@ -37,19 +38,18 @@ func AuthMiddleware(logger zerolog.Logger, jwtSecret string, redisService redis.
 			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "token invalid or expired"})
 		}
 
-		// 从 claims 获取 id & role
-		idVal, ok := claims["id"].(float64)
+		idFloat, ok := claims["id"].(float64)
 		if !ok {
-			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "invalid id format"})
+			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "invalid id type"})
 		}
-		roleVal, ok := claims["role"].(float64)
+		roleFloat, ok := claims["role"].(float64)
 		if !ok {
-			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "invalid role format"})
+			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "invalid role type"})
 		}
 
 		// 存上下文
-		c.Locals("id", int(idVal))
-		c.Locals("role", int(roleVal))
+		c.Locals("id", fmt.Sprint(uint64(idFloat)))
+		c.Locals("role", fmt.Sprint(uint64(roleFloat)))
 
 		return c.Next()
 	}

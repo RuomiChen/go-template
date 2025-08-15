@@ -7,6 +7,7 @@ import (
 	"mvc/internal/middleware"
 	"mvc/internal/news"
 	"mvc/internal/tag"
+	"mvc/internal/tracking_event"
 	"mvc/internal/user"
 	"mvc/internal/ws"
 
@@ -21,6 +22,9 @@ func Register(app *fiber.App, appCtx *appcontext.AppContext) {
 
 	// v1 API
 	v1 := api.Group("/v1")
+
+	trackingGroup := v1.Group("/tracking", middleware.AuthMiddleware(appCtx.Logger, appCtx.JWTSecret, appCtx.RedisService))
+	tracking_event.RegisterRoutes(trackingGroup, appCtx.DB, appCtx.Logger, appCtx.RedisService)
 
 	userGroup := v1.Group("/users", middleware.AuthMiddleware(appCtx.Logger, appCtx.JWTSecret, appCtx.RedisService), middleware.AdminOnly())
 	user.RegisterRoutes(userGroup, appCtx.DB, appCtx.Logger, appCtx.RedisService, appCtx.JWTSecret)

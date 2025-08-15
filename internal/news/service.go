@@ -19,6 +19,7 @@ type Service interface {
 	GetTopNews(limit int) ([]News, error)
 
 	GetNewsByTag(tagID uint, limit, offset int) ([]News, error)
+	GetNewsByIDs(ids []string) ([]News, error)
 }
 
 type service struct {
@@ -82,4 +83,12 @@ func (s *service) GetTopNews(limit int) ([]News, error) {
 
 func (s *service) GetNewsByTag(tagID uint, limit, offset int) ([]News, error) {
 	return s.repo.GetNewsByTag(tagID, limit, offset)
+}
+
+func (s *service) GetNewsByIDs(ids []string) ([]News, error) {
+	newsList, err := s.repo.GetByIDs(ids)
+	if err != nil {
+		return nil, err
+	}
+	return newsList, nil
 }

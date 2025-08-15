@@ -16,6 +16,7 @@ type Repository interface {
 	GetPaged(page, pageSize int) ([]News, int64, error)
 	GetTopNews(limit int) ([]News, error)
 
+	GetByIDs(ids []string) ([]News, error)
 	GetNewsByTag(tagID uint, limit, offset int) ([]News, error)
 }
 
@@ -78,4 +79,13 @@ func (r *repository) GetNewsByTag(tagID uint, limit, offset int) ([]News, error)
 		Limit(limit).Offset(offset).
 		Find(&newsList).Error
 	return newsList, err
+}
+
+func (r *repository) GetByIDs(ids []string) ([]News, error) {
+	var list []News
+	if len(ids) == 0 {
+		return list, nil
+	}
+	err := r.db.Where("id IN ?", ids).Find(&list).Error
+	return list, err
 }

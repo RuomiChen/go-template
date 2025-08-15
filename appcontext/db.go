@@ -7,6 +7,7 @@ import (
 	"mvc/internal/friend_request"
 	"mvc/internal/news"
 	"mvc/internal/tag"
+	"mvc/internal/tracking_event"
 	"mvc/internal/user"
 
 	"gorm.io/driver/mysql"
@@ -27,6 +28,7 @@ func InitDB(dsn string) *gorm.DB {
 		&friend_relation.FriendRelation{},
 		&news.News{},
 		&tag.Tag{},
+		&tracking_event.TrackingEvent{},
 	); err != nil {
 		log.Fatalf("failed to migrate database: %v", err)
 	}

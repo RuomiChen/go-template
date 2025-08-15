@@ -138,3 +138,22 @@ func (h *Handler) DeleteUser(c *fiber.Ctx) error {
 	h.logger.Info().Str("id", id).Msg("delete user success!")
 	return response.Success(c, nil)
 }
+
+// 修改密码
+func (h *Handler) ChangePassword(c *fiber.Ctx) error {
+	userID := c.Locals("id").(string)
+
+	var req struct {
+		OldPassword string `json:"oldPassword"`
+		NewPassword string `json:"newPassword"`
+	}
+
+	if err := c.BodyParser(&req); err != nil {
+		return response.Error(c, 400, "请求参数错误")
+	}
+
+	if err := h.service.ChangePassword(userID, req.OldPassword, req.NewPassword); err != nil {
+		return response.Error(c, 400, err.Error())
+	}
+	return response.Success(c, "修改密码成功")
+}

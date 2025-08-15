@@ -91,13 +91,13 @@ func (s *Service) Register(username, password string) error {
 func (s *Service) Login(c *fiber.Ctx, username, password string) (*LoginResponse, error) {
 	user, err := s.repo.GetByUsername(username)
 	if err != nil || user == nil {
-		return nil, errors.New("invalid username or password")
+		return nil, errors.New("用户名或密码错误")
 	}
 
 	// 校验密码
 	err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password))
 	if err != nil {
-		return nil, errors.New("invalid username or password")
+		return nil, errors.New("用户名或密码错误")
 	}
 
 	token, err := utils.GenerateToken(user.ID, 0, s.jwtSecret)
@@ -117,4 +117,33 @@ func (s *Service) Login(c *fiber.Ctx, username, password string) (*LoginResponse
 type LoginResponse struct {
 	Token string      `json:"token"`
 	User  interface{} `json:"user"` // 或者具体 user 类型
+}
+
+func (s *Service) ChangePassword(userID, oldPassword, newPassword string) error {
+	// 1. 查出用户
+	user, err := s.repo.GetByID(userID)
+	if err != nil || user == nil {
+		return errors.New("用户不存在")
+	}
+
+	if oldPassword == newPassword {
+		return errors.New("新密码不能和旧密码相同")
+	}
+
+	// 2. 校验旧密码
+	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(oldPassword)); err != nil {
+		return errors.New("旧密码错误")
+	}
+
+	// 3. 加密新密码
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(newPassword), bcrypt.DefaultCost)
+	if err != nil {
+		return errors.New("密码加密失败")
+	}
+
+	// 4. 更新数据库
+	updates := map[string]interface{}{
+		"password": string(hashedPassword),
+	}
+	return s.repo.PartialUpdate(userID, updates)
 }

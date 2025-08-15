@@ -26,7 +26,8 @@ func Register(app *fiber.App, appCtx *appcontext.AppContext) {
 	trackingGroup := v1.Group("/tracking", middleware.AuthMiddleware(appCtx.Logger, appCtx.JWTSecret, appCtx.RedisService))
 	tracking_event.RegisterRoutes(trackingGroup, appCtx.DB, appCtx.Logger, appCtx.RedisService)
 
-	userGroup := v1.Group("/users", middleware.AuthMiddleware(appCtx.Logger, appCtx.JWTSecret, appCtx.RedisService), middleware.AdminOnly())
+	userGroup := v1.Group("/users", middleware.AuthMiddleware(appCtx.Logger, appCtx.JWTSecret, appCtx.RedisService))
+
 	user.RegisterRoutes(userGroup, appCtx.DB, appCtx.Logger, appCtx.RedisService, appCtx.JWTSecret)
 
 	newsGroup := v1.Group("/news")

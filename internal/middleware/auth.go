@@ -63,3 +63,42 @@ func AdminOnly() fiber.Handler {
 		return c.Next()
 	}
 }
+func OptionalAuthMiddleware(jwtSecret string, redisService redis.Service) fiber.Handler {
+	return func(c *fiber.Ctx) error {
+		authHeader := c.Get("Authorization")
+		fmt.Print("heade", authHeader)
+		if authHeader == "" {
+			return c.Next()
+		}
+
+		parts := strings.SplitN(authHeader, " ", 2)
+		if len(parts) != 2 || parts[0] != "Bearer" {
+			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "invalid Authorization format"})
+		}
+
+		tokenStr := parts[1]
+
+		// 解析 JWT
+		claims, err := utils.ParseToken(tokenStr, jwtSecret)
+		if err != nil {
+			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "invalid token"})
+		}
+
+		// Redis 校验
+		ctx := context.Background()
+		storedID, err := redisService.ValidateKey(ctx, tokenStr)
+		if err != nil || storedID == "" {
+			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "token invalid or expired"})
+		}
+
+		idFloat, ok := claims["id"].(float64)
+		if !ok {
+			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "invalid id type"})
+		}
+
+		// 存上下文
+		c.Locals("id", fmt.Sprint(uint64(idFloat)))
+		return c.Next()
+	}
+
+}

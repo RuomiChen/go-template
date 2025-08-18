@@ -2,6 +2,7 @@ package news
 
 import (
 	"errors"
+	"fmt"
 	"mvc/pkg/response"
 	"path/filepath"
 	"strconv"
@@ -68,8 +69,20 @@ func (h *Handler) GetNewsDetail(c *fiber.Ctx) error {
 			"error": "missing news id",
 		})
 	}
+	newsID, err := strconv.ParseUint(id, 10, 64)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error": "invalid news id",
+		})
+	}
 
-	news, err := h.service.GetNewsDetail(id)
+	var userID uint64
+	if idStr := c.Locals("id"); idStr != nil {
+		userID, _ = strconv.ParseUint(idStr.(string), 10, 64)
+	}
+	fmt.Print(userID)
+
+	news, err := h.service.GetNewsDetail(newsID, userID)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
@@ -83,6 +96,7 @@ func (h *Handler) GetNewsDetail(c *fiber.Ctx) error {
 
 	return response.Success(c, news)
 }
+
 func (h *Handler) CreateNews(c *fiber.Ctx) error {
 	var news News
 	if err := c.BodyParser(&news); err != nil {
@@ -95,17 +109,14 @@ func (h *Handler) CreateNews(c *fiber.Ctx) error {
 	return response.Success(c, nil)
 }
 func (h *Handler) UpdateNews(c *fiber.Ctx) error {
-	id := c.Params("id")
-	if id == "" {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "missing news id"})
-	}
+	newsID, _ := strconv.ParseUint(c.Params("id"), 10, 64)
 
 	var req News
 	if err := c.BodyParser(&req); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "invalid request body"})
 	}
 
-	updated, err := h.service.UpdateNews(id, &req)
+	updated, err := h.service.UpdateNews(newsID, &req)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": "news not found"})
@@ -116,17 +127,14 @@ func (h *Handler) UpdateNews(c *fiber.Ctx) error {
 	return c.JSON(updated)
 }
 func (h *Handler) PartialUpdateNews(c *fiber.Ctx) error {
-	id := c.Params("id")
-	if id == "" {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "missing news id"})
-	}
+	newsID, _ := strconv.ParseUint(c.Params("id"), 10, 64)
 
 	var updates map[string]interface{}
 	if err := c.BodyParser(&updates); err != nil {
 		return response.Error(c, fiber.StatusBadRequest, "invalid request body")
 	}
 
-	updated, err := h.service.PartialUpdateNews(id, updates)
+	updated, err := h.service.PartialUpdateNews(newsID, updates)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return response.Error(c, fiber.StatusNotFound, "news not found")

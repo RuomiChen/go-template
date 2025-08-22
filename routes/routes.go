@@ -24,18 +24,30 @@ func Register(app *fiber.App, appCtx *appcontext.AppContext) {
 	// v1 API
 	v1 := api.Group("/v1")
 
+	newsLikeRepo := news_like.NewRepository(appCtx.DB)
+	newsLikeService := news_like.NewService(newsLikeRepo)
+
+	newsRepo := news.NewRepository(appCtx.DB)
+	newsService := news.NewService(newsRepo, appCtx.RedisService, newsLikeService)
+
+	trackingEventRepo := tracking_event.NewRepository(appCtx.DB)
+	trackingEventService := tracking_event.NewService(trackingEventRepo, newsService, appCtx.RedisService)
+
 	trackingGroup := v1.Group("/tracking", middleware.AuthMiddleware(appCtx.Logger, appCtx.JWTSecret, appCtx.RedisService))
-	tracking_event.RegisterRoutes(trackingGroup, appCtx.DB, appCtx.Logger, appCtx.RedisService)
+	tracking_event.RegisterRoutes(trackingGroup, trackingEventService, appCtx.Logger, appCtx.RedisService)
+
+	userRepo := user.NewRepository(appCtx.DB)
+	userService := user.NewService(userRepo, appCtx.JWTSecret, appCtx.RedisService)
 
 	userGroup := v1.Group("/users", middleware.AuthMiddleware(appCtx.Logger, appCtx.JWTSecret, appCtx.RedisService))
 
-	user.RegisterRoutes(userGroup, appCtx.DB, appCtx.Logger, appCtx.RedisService, appCtx.JWTSecret)
+	user.RegisterRoutes(userGroup, userService, appCtx.Logger)
 
 	newsGroup := v1.Group("/news", middleware.OptionalAuthMiddleware(appCtx.JWTSecret, appCtx.RedisService))
-	news.RegisterRoutes(newsGroup, appCtx.DB, appCtx.Logger, appCtx.RedisService)
+	news.RegisterRoutes(newsGroup, newsService, appCtx.Logger, appCtx.RedisService)
 
 	newsLikeGroup := v1.Group("/news_like", middleware.AuthMiddleware(appCtx.Logger, appCtx.JWTSecret, appCtx.RedisService))
-	news_like.RegisterRoutes(newsLikeGroup, appCtx.DB, appCtx.Logger, appCtx.RedisService)
+	news_like.RegisterRoutes(newsLikeGroup, newsLikeService, appCtx.Logger, appCtx.RedisService)
 
 	tagGroup := v1.Group("/tag")
 	tag.RegisterRoutes(tagGroup, appCtx.DB, appCtx.Logger, appCtx.RedisService)

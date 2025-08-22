@@ -1,20 +1,13 @@
 package news
 
 import (
-	"mvc/internal/news_like"
 	"mvc/internal/redis"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/rs/zerolog"
-	"gorm.io/gorm"
 )
 
-func RegisterRoutes(r fiber.Router, db *gorm.DB, logger zerolog.Logger, redisService redis.Service) {
-	news_like_repo := news_like.NewRepository(db)
-	news_like_service := news_like.NewService(news_like_repo)
-
-	repo := NewRepository(db)
-	service := NewService(repo, redisService, news_like_service)
+func RegisterRoutes(r fiber.Router, service Service, logger zerolog.Logger, redisService redis.Service) {
 	handler := NewHandler(service, logger)
 
 	r.Post("/upload", handler.UploadImage) //上传接口

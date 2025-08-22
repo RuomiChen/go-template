@@ -2,17 +2,14 @@ package user
 
 import (
 	"mvc/internal/middleware"
-	"mvc/internal/redis"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/rs/zerolog"
-	"gorm.io/gorm"
 )
 
-func RegisterRoutes(r fiber.Router, db *gorm.DB, logger zerolog.Logger, redisService redis.Service, jwtSecret string) {
-	repo := NewRepository(db)
-	service := NewService(repo, jwtSecret, redisService)
-	handler := NewHandler(service, logger, redisService)
+func RegisterRoutes(r fiber.Router, service *Service, logger zerolog.Logger) {
+
+	handler := NewHandler(service, logger)
 
 	r.Post("/change-password", handler.ChangePassword) //修改密码
 

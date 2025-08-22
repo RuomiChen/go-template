@@ -2,7 +2,6 @@ package user
 
 import (
 	"errors"
-	"mvc/internal/redis"
 	"mvc/pkg/response"
 
 	"github.com/gofiber/fiber/v2"
@@ -11,13 +10,12 @@ import (
 )
 
 type Handler struct {
-	service      *Service
-	logger       zerolog.Logger
-	redisService redis.Service
+	service *Service
+	logger  zerolog.Logger
 }
 
-func NewHandler(service *Service, logger zerolog.Logger, redisService redis.Service) *Handler {
-	return &Handler{service: service, logger: logger, redisService: redisService}
+func NewHandler(service *Service, logger zerolog.Logger) *Handler {
+	return &Handler{service: service, logger: logger}
 }
 
 func (h *Handler) GetUserList(c *fiber.Ctx) error {

@@ -1,6 +1,8 @@
 package tracking_event
 
-import "gorm.io/gorm"
+import (
+	"gorm.io/gorm"
+)
 
 type Repository interface {
 	addTrackingEvent(trackingEvent *TrackingEvent) error

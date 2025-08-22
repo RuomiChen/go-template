@@ -100,6 +100,27 @@ func (s *Service) Login(c *fiber.Ctx, username, password string) (*LoginResponse
 		return nil, errors.New("用户名或密码错误")
 	}
 
+	// // 记录
+	// // 获取客户端信息
+	// ip := c.IP()
+	// ua := c.Get("User-Agent")
+	// device := utils.parseDeviceFromUA(ua) // 你可以用 ua-parser-js 或 Go 的 UA 库实现
+
+	// // 记录登录事件
+	// extra, _ := json.Marshal(tracking_event.LoginExtra{
+	// 	IP:        ip,
+	// 	Device:    device,
+	// 	UserAgent: ua,
+	// 	Timestamp: time.Now(),
+	// })
+	// event := tracking_event.TrackingEvent{
+	// 	UserID: u.ID,
+	// 	From:   ip,
+	// 	Action: "login",
+	// 	Extra:  string(extra),
+	// }
+	// s.DB.Create(&event)
+
 	token, err := utils.GenerateToken(user.ID, 0, s.jwtSecret)
 	if err != nil {
 		return nil, err

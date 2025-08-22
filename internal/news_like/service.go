@@ -5,17 +5,23 @@ import (
 	"time"
 )
 
-type Service struct {
+type Service interface {
+	ToggleLike(ctx context.Context, newsID, userID uint64) (bool, error)
+	IsLiked(userID, newsID uint64) (bool, error)
+	CountLikes(newsID uint64) (int64, error)
+}
+
+type service struct {
 	likeRepo Repository
-	// statsRepo NewsStatsRepo
+	// 其他依赖
 }
 
 // , statsRepo NewsStatsRepo
-func NewService(likeRepo Repository) *Service {
-	return &Service{likeRepo: likeRepo}
+func NewService(likeRepo Repository) Service {
+	return &service{likeRepo: likeRepo}
 	// , statsRepo: statsRepo
 }
-func (s *Service) ToggleLike(ctx context.Context, newsID, userID uint64) (bool, error) {
+func (s *service) ToggleLike(ctx context.Context, newsID, userID uint64) (bool, error) {
 	like, err := s.likeRepo.DeepFind(newsID, userID)
 	if err != nil {
 		return false, err
@@ -44,10 +50,10 @@ func (s *Service) ToggleLike(ctx context.Context, newsID, userID uint64) (bool, 
 	// _ = s.statsRepo.IncrementLike(ctx, newsID)
 	return true, nil
 }
-func (s *Service) IsLiked(userID, newsID uint64) (bool, error) {
+func (s *service) IsLiked(userID, newsID uint64) (bool, error) {
 	return s.likeRepo.IsLiked(userID, newsID)
 }
 
-func (s *Service) CountLikes(newsID uint64) (int64, error) {
+func (s *service) CountLikes(newsID uint64) (int64, error) {
 	return s.likeRepo.CountLikes(newsID)
 }

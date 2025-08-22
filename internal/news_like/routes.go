@@ -7,7 +7,7 @@ import (
 	"github.com/rs/zerolog"
 )
 
-func RegisterRoutes(r fiber.Router, service *Service, logger zerolog.Logger, redisService redis.Service) {
+func RegisterRoutes(r fiber.Router, service Service, logger zerolog.Logger, redisService redis.Service) {
 	handler := NewHandler(service)
 
 	r.Post("/like/:id", handler.ToggleLike) //上传接口

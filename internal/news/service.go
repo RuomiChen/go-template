@@ -27,10 +27,10 @@ type Service interface {
 type service struct {
 	repo            Repository
 	hashStore       *utils.RedisHashStore
-	newsLikeService *news_like.Service
+	newsLikeService news_like.Service
 }
 
-func NewService(repo Repository, redisService redis.Service, newsLikeService *news_like.Service) Service {
+func NewService(repo Repository, redisService redis.Service, newsLikeService news_like.Service) Service {
 	hashStore := utils.NewRedisHashStore(redisService, "imghash:", time.Hour*24*7)
 	return &service{repo: repo, hashStore: hashStore, newsLikeService: newsLikeService}
 }

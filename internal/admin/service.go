@@ -11,12 +11,12 @@ import (
 )
 
 type Service struct {
-	repo         *Repository
+	repo         Repository
 	jwtSecret    string
 	redisService redis.Service
 }
 
-func NewService(repo *Repository, jwtSecret string, redisService redis.Service) *Service {
+func NewService(repo Repository, jwtSecret string, redisService redis.Service) *Service {
 	return &Service{repo: repo, jwtSecret: jwtSecret, redisService: redisService}
 }
 

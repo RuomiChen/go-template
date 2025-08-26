@@ -6,6 +6,7 @@ import (
 	"mvc/internal/friend_relation"
 	"mvc/internal/friend_request"
 	"mvc/internal/news"
+	"mvc/internal/news_collect"
 	"mvc/internal/news_like"
 	"mvc/internal/tag"
 	"mvc/internal/tracking_event"
@@ -29,6 +30,7 @@ func InitDB(dsn string) *gorm.DB {
 		&friend_relation.FriendRelation{},
 		&news.News{},
 		&news_like.NewsLike{},
+		&news_collect.NewsCollect{},
 		&tag.Tag{},
 		&tracking_event.TrackingEvent{},
 	); err != nil {

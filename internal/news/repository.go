@@ -16,8 +16,9 @@ type Repository interface {
 	GetPaged(page, pageSize int) ([]News, int64, error)
 	GetTopNews(limit int) ([]News, error)
 
-	GetByIDs(ids []string) ([]News, error)
+	GetByIDs(ids []uint64) ([]News, error)
 	GetNewsByTag(tagID uint, limit, offset int) ([]News, error)
+	GetNewsDetailWithUser(newsID, userID uint64) (*News, error)
 }
 
 type repository struct {
@@ -81,11 +82,45 @@ func (r *repository) GetNewsByTag(tagID uint, limit, offset int) ([]News, error)
 	return newsList, err
 }
 
-func (r *repository) GetByIDs(ids []string) ([]News, error) {
+func (r *repository) GetByIDs(ids []uint64) ([]News, error) {
 	var list []News
 	if len(ids) == 0 {
 		return list, nil
 	}
 	err := r.db.Where("id IN ?", ids).Find(&list).Error
 	return list, err
+}
+func (r *repository) GetNewsDetailWithUser(newsID, userID uint64) (*News, error) {
+	var detail News
+
+	subLike := r.db.
+		Table("news_like").
+		Select("COUNT(*)").
+		Where("news_id = news.id")
+
+	subCollect := r.db.
+		Table("news_collect").
+		Select("COUNT(*)").
+		Where("news_id = news.id")
+
+	subIsLike := r.db.
+		Table("news_like").
+		Select("1").
+		Where("news_id = news.id AND user_id = ?", userID)
+
+	subIsCollect := r.db.
+		Table("news_collect").
+		Select("1").
+		Where("news_id = news.id AND user_id = ?", userID)
+
+	err := r.db.Table("news").
+		Select("news.id, news.title, news.content, (?) as like_count, (?) as collect_count, EXISTS (?) as is_like, EXISTS (?) as is_collect",
+			subLike, subCollect, subIsLike, subIsCollect).
+		Where("news.id = ?", newsID).
+		Scan(&detail).Error
+
+	if err != nil {
+		return nil, err
+	}
+	return &detail, nil
 }

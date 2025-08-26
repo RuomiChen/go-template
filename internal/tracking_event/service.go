@@ -64,9 +64,9 @@ func (s *service) GetUserNewsRecordsWithData(userID string) ([]TrackingWithNews,
 	}
 
 	// 2. 从每条记录解析 news id
-	idSet := make(map[string]struct{})
+	idSet := make(map[uint64]struct{})
 	for _, e := range events {
-		var extraData map[string]string
+		var extraData map[string]uint64
 		if err := json.Unmarshal([]byte(e.Extra), &extraData); err != nil {
 			continue
 		}
@@ -76,7 +76,7 @@ func (s *service) GetUserNewsRecordsWithData(userID string) ([]TrackingWithNews,
 	}
 
 	// 3. 构造 id 列表
-	ids := make([]string, 0, len(idSet))
+	ids := make([]uint64, 0, len(idSet))
 	for id := range idSet {
 		ids = append(ids, id)
 	}
@@ -90,7 +90,7 @@ func (s *service) GetUserNewsRecordsWithData(userID string) ([]TrackingWithNews,
 	// 5. 构造 id -> news map
 	newsMap := make(map[string]*news.News)
 	for i := range newsList {
-		newsMap[strconv.FormatUint(newsList[i].ID, 10)] = &newsList[i]
+		newsMap[strconv.FormatUint(newsList[i].ID, 10)] = newsList[i]
 	}
 
 	// 6. 把 news 放入每条记录

@@ -6,6 +6,7 @@ import (
 	"mvc/internal/friend_request"
 	"mvc/internal/middleware"
 	"mvc/internal/news"
+	"mvc/internal/news_collect"
 	"mvc/internal/news_like"
 	"mvc/internal/tag"
 	"mvc/internal/tracking_event"
@@ -24,11 +25,17 @@ func Register(app *fiber.App, appCtx *appcontext.AppContext) {
 	// v1 API
 	v1 := api.Group("/v1")
 
+	newsRepo := news.NewRepository(appCtx.DB)
+	newsService := news.NewService(newsRepo, appCtx.RedisService)
+
 	newsLikeRepo := news_like.NewRepository(appCtx.DB)
 	newsLikeService := news_like.NewService(newsLikeRepo)
 
-	newsRepo := news.NewRepository(appCtx.DB)
-	newsService := news.NewService(newsRepo, appCtx.RedisService, newsLikeService)
+	newsCollectRepo := news_collect.NewRepository(appCtx.DB)
+	newsCollectService := news_collect.NewService(newsCollectRepo, newsService)
+
+	newsCollectGroup := v1.Group("/news_collect", middleware.AuthMiddleware(appCtx.Logger, appCtx.JWTSecret, appCtx.RedisService))
+	news_collect.RegisterRoutes(newsCollectGroup, newsCollectService, appCtx.Logger, appCtx.RedisService)
 
 	trackingEventRepo := tracking_event.NewRepository(appCtx.DB)
 	trackingEventService := tracking_event.NewService(trackingEventRepo, newsService, appCtx.RedisService)

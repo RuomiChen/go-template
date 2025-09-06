@@ -5,6 +5,8 @@ import (
 	"mvc/internal/admin"
 	"mvc/internal/friend_relation"
 	"mvc/internal/friend_request"
+	"mvc/internal/group"
+	"mvc/internal/group_member"
 	"mvc/internal/news"
 	"mvc/internal/news_collect"
 	"mvc/internal/news_like"
@@ -33,6 +35,8 @@ func InitDB(dsn string) *gorm.DB {
 		&news_collect.NewsCollect{},
 		&tag.Tag{},
 		&tracking_event.TrackingEvent{},
+		&group.Group{},
+		&group_member.GroupMember{},
 	); err != nil {
 		log.Fatalf("failed to migrate database: %v", err)
 	}

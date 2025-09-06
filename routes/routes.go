@@ -4,6 +4,8 @@ import (
 	"mvc/appcontext"
 	"mvc/internal/auth"
 	"mvc/internal/friend_request"
+	"mvc/internal/group"
+	"mvc/internal/group_member"
 	"mvc/internal/middleware"
 	"mvc/internal/news"
 	"mvc/internal/news_collect"
@@ -27,6 +29,20 @@ func Register(app *fiber.App, appCtx *appcontext.AppContext) {
 
 	newsRepo := news.NewRepository(appCtx.DB)
 	newsService := news.NewService(newsRepo, appCtx.RedisService)
+
+	// 群组
+	groupRepo := group.NewRepository(appCtx.DB)
+	groupService := group.NewService(appCtx.DB, groupRepo)
+	groupGroup := v1.Group("/group", middleware.AuthMiddleware(appCtx.Logger, appCtx.JWTSecret, appCtx.RedisService))
+
+	group.RegisterRoutes(groupGroup, groupService, appCtx.Logger)
+
+	//群组成员
+	groupMemeberRepo := group_member.NewRepository(appCtx.DB)
+	groupMemeberService := group_member.NewService(groupMemeberRepo)
+	groupMemeberGroup := v1.Group("/group_member", middleware.AuthMiddleware(appCtx.Logger, appCtx.JWTSecret, appCtx.RedisService))
+
+	group_member.RegisterRoutes(groupMemeberGroup, groupMemeberService, appCtx.Logger)
 
 	newsLikeRepo := news_like.NewRepository(appCtx.DB)
 	newsLikeService := news_like.NewService(newsLikeRepo)

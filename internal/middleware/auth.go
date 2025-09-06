@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"mvc/internal/redis"
+	"mvc/pkg/response"
 	"mvc/pkg/utils"
 	"strings"
 
@@ -28,23 +29,23 @@ func AuthMiddleware(logger zerolog.Logger, jwtSecret string, redisService redis.
 		// 解析 JWT
 		claims, err := utils.ParseToken(tokenStr, jwtSecret)
 		if err != nil {
-			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "invalid token"})
+			return response.Error(c, fiber.StatusUnauthorized, "invalid token")
 		}
 
 		// Redis 校验
 		ctx := context.Background()
 		storedID, err := redisService.ValidateKey(ctx, tokenStr)
 		if err != nil || storedID == "" {
-			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "token invalid or expired"})
+			return response.Error(c, fiber.StatusUnauthorized, "token invalid or expired")
 		}
 
 		idFloat, ok := claims["id"].(float64)
 		if !ok {
-			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "invalid id type"})
+			return response.Error(c, fiber.StatusUnauthorized, "invalid id type")
 		}
 		roleFloat, ok := claims["role"].(float64)
 		if !ok {
-			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "invalid role type"})
+			return response.Error(c, fiber.StatusUnauthorized, "invalid role type")
 		}
 
 		// 存上下文

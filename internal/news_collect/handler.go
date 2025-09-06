@@ -1,6 +1,7 @@
 package news_collect
 
 import (
+	"fmt"
 	"mvc/pkg/response"
 	"strconv"
 
@@ -27,12 +28,15 @@ func (h *Handler) ToggleLike(c *fiber.Ctx) error {
 
 	// 调用 service 判断当前状态
 	liked, err := h.svc.ToggleCollect(c.Context(), newsID, userID)
+	fmt.Println(newsID)
+	fmt.Println(userID)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
 	}
-
+	fmt.Println("收藏成功")
 	msg := "收藏成功"
 	if !liked {
+		fmt.Println("取消收藏")
 		msg = "取消收藏"
 	}
 	return response.Success(c, msg)

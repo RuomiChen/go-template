@@ -4,6 +4,8 @@ import (
 	"context"
 	"mvc/internal/news"
 	"time"
+
+	"gorm.io/gorm"
 )
 
 type Service interface {
@@ -24,32 +26,33 @@ func NewService(repo Repository, newsService news.Service) Service {
 	return &service{repo: repo, newsService: newsService}
 }
 func (s *service) ToggleCollect(ctx context.Context, newsID, userID uint64) (bool, error) {
-	like, err := s.repo.DeepFind(newsID, userID)
+	collect, err := s.repo.DeepFind(newsID, userID)
 	if err != nil {
 		return false, err
 	}
 
-	if like != nil && !like.DeletedAt.Valid {
-		// 已点赞 -> 逻辑删除
-		now := time.Now()
-		like.DeletedAt.Time = now
-		like.DeletedAt.Valid = true
-		_ = s.repo.Update(like)
-		// _ = s.statsRepo.DecrementLike(ctx, newsID)
+	if collect != nil && !collect.DeletedAt.Valid {
+		// 已收藏 -> 逻辑删除
+		collect.DeletedAt = gorm.DeletedAt{Time: time.Now(), Valid: true}
+		if err := s.repo.Update(collect); err != nil {
+			return false, err
+		}
 		return false, nil
 	}
 
-	if like != nil && like.DeletedAt.Valid {
-		// 撤销逻辑删除
-		like.DeletedAt.Valid = false
-		_ = s.repo.Update(like)
-		// _ = s.statsRepo.IncrementLike(ctx, newsID)
+	if collect != nil && collect.DeletedAt.Valid {
+		// 撤销逻辑删除 -> 直接清空
+		collect.DeletedAt = gorm.DeletedAt{}
+		if err := s.repo.Update(collect); err != nil {
+			return false, err
+		}
 		return true, nil
 	}
 
-	// 新增点赞
-	_ = s.repo.Create(&NewsCollect{NewsID: newsID, UserID: userID})
-	// _ = s.statsRepo.IncrementLike(ctx, newsID)
+	// 新增收藏
+	if err := s.repo.Create(&NewsCollect{NewsID: newsID, UserID: userID}); err != nil {
+		return false, err
+	}
 	return true, nil
 }
 func (s *service) IsCollected(userID, newsID uint64) (bool, error) {

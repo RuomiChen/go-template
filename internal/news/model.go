@@ -14,8 +14,8 @@ type News struct {
 	Views   uint      `json:"views" gorm:"default:0"`
 	Tags    []tag.Tag `gorm:"many2many:news_tag;"` // 多对多关联 Tag
 	// 虚拟字段，不映射数据库
-	IsLike       bool `json:"is_like" gorm:"-"`
-	LikeCount    int  `json:"like_count" gorm:"-"`
-	IsCollect    bool `json:"is_collect" gorm:"-"`
-	CollectCount int  `json:"collect_count" gorm:"-"`
+	IsLike       bool `json:"is_like" gorm:"column:IsLike"`
+	LikeCount    int  `json:"like_count" gorm:"column:LikeCount"`
+	IsCollect    bool `json:"is_collect" gorm:"column:IsCollect"`
+	CollectCount int  `json:"collect_count" gorm:"column:CollectCount"`
 }

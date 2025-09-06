@@ -57,25 +57,27 @@ func (s *service) GetUserTrackingEventsByAction(userID, action string) ([]Tracki
 	return result, nil
 }
 func (s *service) GetUserNewsRecordsWithData(userID string) ([]TrackingWithNews, error) {
-	// 1. 获取用户所有新闻记录
+	// 1. 获取用户所有新闻浏览记录
 	events, err := s.repo.GetUserTrackingEvents(userID, "news view")
 	if err != nil {
 		return nil, err
 	}
 
-	// 2. 从每条记录解析 news id
+	// 2. 收集所有 newsID
 	idSet := make(map[uint64]struct{})
 	for _, e := range events {
-		var extraData map[string]uint64
+		var extraData map[string]string
 		if err := json.Unmarshal([]byte(e.Extra), &extraData); err != nil {
 			continue
 		}
-		if id, ok := extraData["id"]; ok {
-			idSet[id] = struct{}{}
+		if idStr, ok := extraData["id"]; ok {
+			if id, err := strconv.ParseUint(idStr, 10, 64); err == nil {
+				idSet[id] = struct{}{}
+			}
 		}
 	}
 
-	// 3. 构造 id 列表
+	// 3. 转换成切片
 	ids := make([]uint64, 0, len(idSet))
 	for id := range idSet {
 		ids = append(ids, id)
@@ -87,24 +89,30 @@ func (s *service) GetUserNewsRecordsWithData(userID string) ([]TrackingWithNews,
 		return nil, err
 	}
 
-	// 5. 构造 id -> news map
-	newsMap := make(map[string]*news.News)
-	for i := range newsList {
-		newsMap[strconv.FormatUint(newsList[i].ID, 10)] = newsList[i]
+	// 5. 构造 id -> *News map
+	newsMap := make(map[uint64]*news.News)
+	for _, n := range newsList {
+		if n != nil {
+			newsMap[n.ID] = n
+		}
 	}
 
-	// 6. 把 news 放入每条记录
+	// 6. 拼装结果，填充 Data
 	result := make([]TrackingWithNews, 0, len(events))
 	for _, e := range events {
 		var extraData map[string]string
-		var newsID string
+		var newsID uint64
 		if err := json.Unmarshal([]byte(e.Extra), &extraData); err == nil {
-			newsID = extraData["id"]
+			if idStr, ok := extraData["id"]; ok {
+				if id, err := strconv.ParseUint(idStr, 10, 64); err == nil {
+					newsID = id
+				}
+			}
 		}
 
 		result = append(result, TrackingWithNews{
 			TrackingEvent: e,
-			Data:          newsMap[newsID],
+			Data:          newsMap[newsID], // 可能为 nil，如果找不到
 		})
 	}
 

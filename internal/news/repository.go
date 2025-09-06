@@ -93,34 +93,18 @@ func (r *repository) GetByIDs(ids []uint64) ([]News, error) {
 func (r *repository) GetNewsDetailWithUser(newsID, userID uint64) (*News, error) {
 	var detail News
 
-	subLike := r.db.
-		Table("news_like").
-		Select("COUNT(*)").
-		Where("news_id = news.id")
-
-	subCollect := r.db.
-		Table("news_collect").
-		Select("COUNT(*)").
-		Where("news_id = news.id")
-
-	subIsLike := r.db.
-		Table("news_like").
-		Select("1").
-		Where("news_id = news.id AND user_id = ?", userID)
-
-	subIsCollect := r.db.
-		Table("news_collect").
-		Select("1").
-		Where("news_id = news.id AND user_id = ?", userID)
-
 	err := r.db.Table("news").
-		Select("news.id, news.title, news.content, (?) as like_count, (?) as collect_count, EXISTS (?) as is_like, EXISTS (?) as is_collect",
-			subLike, subCollect, subIsLike, subIsCollect).
+		Select(`news.id, news.title, news.content, news.cover, news.author, news.views,
+        (SELECT COUNT(*) FROM news_likes WHERE news_id = news.id AND deleted_at IS NULL) AS LikeCount,
+        (SELECT COUNT(*) FROM news_collects WHERE news_id = news.id AND deleted_at IS NULL) AS CollectCount,
+        EXISTS(SELECT 1 FROM news_likes WHERE news_id = news.id AND user_id = ? AND deleted_at IS NULL) AS IsLike,
+        EXISTS(SELECT 1 FROM news_collects WHERE news_id = news.id AND user_id = ? AND deleted_at IS NULL) AS IsCollect`,
+			userID, userID).
 		Where("news.id = ?", newsID).
 		Scan(&detail).Error
-
 	if err != nil {
 		return nil, err
 	}
+
 	return &detail, nil
 }

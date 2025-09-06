@@ -3,6 +3,8 @@ package news_like
 import (
 	"context"
 	"time"
+
+	"gorm.io/gorm"
 )
 
 type Service interface {
@@ -29,9 +31,8 @@ func (s *service) ToggleLike(ctx context.Context, newsID, userID uint64) (bool, 
 
 	if like != nil && !like.DeletedAt.Valid {
 		// 已点赞 -> 逻辑删除
-		now := time.Now()
-		like.DeletedAt.Time = now
-		like.DeletedAt.Valid = true
+		like.DeletedAt = gorm.DeletedAt{Time: time.Now(), Valid: true}
+
 		_ = s.likeRepo.Update(like)
 		// _ = s.statsRepo.DecrementLike(ctx, newsID)
 		return false, nil
@@ -39,9 +40,9 @@ func (s *service) ToggleLike(ctx context.Context, newsID, userID uint64) (bool, 
 
 	if like != nil && like.DeletedAt.Valid {
 		// 撤销逻辑删除
-		like.DeletedAt.Valid = false
+		like.DeletedAt = gorm.DeletedAt{Time: time.Now(), Valid: false}
+
 		_ = s.likeRepo.Update(like)
-		// _ = s.statsRepo.IncrementLike(ctx, newsID)
 		return true, nil
 	}
 
